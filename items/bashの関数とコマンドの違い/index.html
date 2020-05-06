@@ -1,0 +1,65 @@
+
+<h1>
+<span id="関数とコマンド" class="fragment"></span><a href="#%E9%96%A2%E6%95%B0%E3%81%A8%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89"><i class="fa fa-link"></i></a>関数とコマンド</h1>
+
+<p>bashではほとんどライブラリのような概念がありませんが、関数は存在します。<br>
+多分ライブラリが無いのは個々のコマンドの整合性が取れないことが多いからだと思いますが、ともあれ関数とコマンドは殆ど同じように使えます。</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">example_func1.sh</span></div>
+<div class="highlight"><pre><span class="k">function </span>hello<span class="o">()</span> <span class="o">{</span>
+    <span class="nb">echo</span> <span class="s2">"Hello,World!"</span>
+    <span class="k">return </span>0
+<span class="o">}</span>
+</pre></div>
+</div>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">hello1.sh</span></div>
+<div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="nb">echo</span> <span class="s2">"Hello,World!"</span>
+<span class="nb">exit </span>0
+</pre></div>
+</div>
+
+<p>この2つはほとんど同じです。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nb">source </span>example_func1.sh
+hello
+<span class="c">#Hello,World!</span>
+bash ./hello1.sh
+<span class="c">#Hello,World!</span>
+</pre></div></div>
+
+<p>しかし、</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">example_func2.sh</span></div>
+<div class="highlight"><pre><span class="k">function </span>hello<span class="o">()</span> <span class="o">{</span>
+    <span class="nb">echo</span> <span class="s2">"Hello,World!"</span>
+    <span class="nb">echo</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span>
+    <span class="k">return </span>0
+<span class="o">}</span>
+</pre></div>
+</div>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">hello2.sh</span></div>
+<div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="nb">echo</span> <span class="s2">"Hello,World!
+echo "</span><span class="nv">$0</span><span class="s2">"
+exit 0
+</span></pre></div>
+</div>
+
+<p>この2つは結果が異なります。<br>
+関数の場合は$0は<code>bash</code>コマンドの場合は<code>hello2</code>と言うコマンド名になります。<br>
+関数名は<code>${FUNCNAME[0]}</code>で取得出来ます。<br>
+他にも戻り値をセットするのに関数は<strong>return</strong>キーワード、コマンドは<strong>exit</strong>コマンドを使います。</p>
+
+<h1>
+<span id="getopts" class="fragment"></span><a href="#getopts"><i class="fa fa-link"></i></a>getopts</h1>
+
+<p>getoptsは関数では使用できません。</p>
+
+<p>何か違いが他にもあれば教えて下さい。</p>

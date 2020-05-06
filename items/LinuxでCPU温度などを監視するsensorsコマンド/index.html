@@ -1,0 +1,20 @@
+
+<h1>
+<span id="sensorsコマンドの導入" class="fragment"></span><a href="#sensors%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E5%B0%8E%E5%85%A5"><i class="fa fa-link"></i></a>sensorsコマンドの導入</h1>
+
+<p><a href="http://gihyo.jp/admin/serial/01/ubuntu-recipe/0183" rel="nofollow noopener" target="_blank">この辺</a>を参考にしてください｡<br>
+apt,yumともに標準でパッケージに入っています｡</p>
+
+<h1>
+<span id="コマンドから表示される内容を更新する" class="fragment"></span><a href="#%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%8B%E3%82%89%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B%E5%86%85%E5%AE%B9%E3%82%92%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>コマンドから表示される内容を更新する</h1>
+
+<p>繰り返し文を利用します｡</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>while [ 1 ];do
+ sensors
+#表示の更新間隔
+ sleep 5s
+done
+</pre></div></div>
+
+<p>これで5秒間隔でCPU情報が更新されます｡もし止めたい時は^Cしてください｡</p>

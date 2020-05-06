@@ -1,0 +1,32 @@
+
+<h1>
+<span id="ndkを使えばswiftから書ける" class="fragment"></span><a href="#ndk%E3%82%92%E4%BD%BF%E3%81%88%E3%81%B0swift%E3%81%8B%E3%82%89%E6%9B%B8%E3%81%91%E3%82%8B"><i class="fa fa-link"></i></a>NDKを使えばSwiftから書ける!</h1>
+
+<p>android ndkはそれぞれのアーキテクチャ別のLinux共有ライブラリを利用しているだけなので、別にAndroid.mkを書く必要はありません。やるべきことは、ARMなどのCPUに合わせる、PICをつける、android_main関数をつけるというだけです。<br>
+さて、Apple Swiftにも勿論C言語から使える.soを作れます。<br>
+<code>@_silgen_name</code>を使えばC言語の関数として宣言することが出来ます。<br>
+nmコマンドによるシンボルとSwiftのメソッド宣言?の対応はこちらです。<br>
+(Swift知りません。)<br>
+</p><table>
+<tr>
+<th>シンボル</th>
+<th>Swift</th>
+</tr>
+<tr>
+<td>t (ローカルテキストシンボル)</td>
+<td>internal func</td>
+</tr>
+<tr>
+<td>T (グローバルテキストシンボル)</td>
+<td>func</td>
+</tr>
+<tr>
+<td>B/b (グローバル/ローカルbssシンボル)</td>
+<td>おそらく外部クラスの参照</td>
+</tr>
+<tr>
+<td>U (外部ライブラリの参照)</td>
+<td>外部の共有ライブラリで実装されたCの関数を参照</td>
+</tr>
+</table><br>
+しかし、現在まだSwiftでこういったことをするプロジェクトはありません。なので、Swiftで書こうと思えば、C言語の内容の実装をひたすらやらないといけないので、ちょっと大変かと思われます。

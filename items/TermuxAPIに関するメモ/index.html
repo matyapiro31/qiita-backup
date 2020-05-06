@@ -1,0 +1,9 @@
+<ol>
+<li>Termux APIのリポジトリは<a href="https://github.com/termux/termux-api" title="termux-api" rel="nofollow noopener" target="_blank">ここ</a>
+</li>
+<li>Termux APIは発信者となるコマンドと受信してAndroidのAPIによる結果を返すアプリを<code>am</code>コマンドとLinux無名ソケットで繋いている。</li>
+<li>既存のコマンド側は対象とするアプリ名を指定する方法がないのでこれを変えることによってTermu xと連携できる新規アプリを作れる。</li>
+<li>Termuxからの応答という形を経ずにAPI側から叩くのは不可だが、Widgetなどでそれに近いことをしているので方法はある。</li>
+<li>TermuxはSELinux、root権限がないことなど様々な条件をクリアするようにパッチを当てている。</li>
+<li>パッケージ管理システムは<code>apt</code>なので、リポジトリを登録すれば簡単にパッケージを配信できる。</li>
+</ol>

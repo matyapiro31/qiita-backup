@@ -1,0 +1,39 @@
+
+<h1>
+<span id="xamarin-android-playerを知る" class="fragment"></span><a href="#xamarin-android-player%E3%82%92%E7%9F%A5%E3%82%8B"><i class="fa fa-link"></i></a>Xamarin Android Playerを知る</h1>
+
+<p>Xamarin Android PlayerはintelのVT-Xテクノロジーを利用してx86の仮想化を支援することで高速な仮想マシンを実現していますが、Hyper-Vとは排他的な関係にあり、一応同時利用はできますが、そこまで早くなりません。導入などは<a href="http://yutawatanabe.hatenablog.com/entry/xamarin-android-player-preview-install" rel="nofollow noopener" target="_blank">Xamarin Android Player のインストール方法 ( Google Apps &amp; Google Play Services 含む )</a>[yutawatanabe.hatenablog.com]を参考にしてください。<br>
+Androidの物理キーの操作は</p>
+
+<hr>
+
+<p>音量  大|Ctrl+Up<br><br>
+音量 小|Ctrl+Down (おそらく)<br><br>
+90度回転 |Ctrl+Left,Right<br><br>
+電源  |Escape<br></p>
+
+<hr>
+
+<h1>
+<span id="コマンドラインから起動する" class="fragment"></span><a href="#%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%83%A9%E3%82%A4%E3%83%B3%E3%81%8B%E3%82%89%E8%B5%B7%E5%8B%95%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>コマンドラインから起動する</h1>
+
+<p><code>/* Mac OS Xの場合 */</code></p>
+
+<p><em><code>/path/to/Xamarin Android Player</code></em><code>--name "Device Name"</code></p>
+
+<p><code>/* Windowsの場合 */</code></p>
+
+<p><em><code>Path\to\AndroidPlayer.exe</code></em><code>--name "Device Name"</code></p>
+
+<p>アンロックするにはadbのシェルから</p>
+
+<p><code>adb shell input keyevent 82</code></p>
+
+<p>としてください。</p>
+
+<p>出典:</p>
+
+<ol>
+<li><p><a href="http://stackoverflow.com/questions/27523348/how-to-start-xamarin-android-player-from-command-line" rel="nofollow noopener" target="_blank">How to start Xamarin-Android-Player from command line?</a>[stackoverflow.com]</p></li>
+<li><p><a href="http://developer.xamarin.com/guides/android/getting_started/installation/android-player/" rel="nofollow noopener" target="_blank">Xamarin Android Player</a>[xamarin.com]</p></li>
+</ol>

@@ -1,0 +1,32 @@
+<p>PowerShellがオープンソース化され、Linux,macOS版がリリースされました。<br>
+GitHubで公開されています。<a href="https://github.com/PowerShell/PowerShell" class="autolink" rel="nofollow noopener" target="_blank">https://github.com/PowerShell/PowerShell</a></p>
+
+<h1>
+<span id="なぜpowershellがubuntuで動くのか" class="fragment"></span><a href="#%E3%81%AA%E3%81%9Cpowershell%E3%81%8Cubuntu%E3%81%A7%E5%8B%95%E3%81%8F%E3%81%AE%E3%81%8B"><i class="fa fa-link"></i></a>なぜPowerShellがUbuntuで動くのか?</h1>
+
+<p>ITMediaの記事にも有る通り、PowerShellは.NET Framework上で動くアプリケーションです。<br>
+先だってオープンソース化されLinux,macOS向けにリリースされていた.NET Coreのおかげです。<br>
+元々.NET FrameworkはJavaと同じくプラットフォームに依存しないような設計であるため、PowerShell自体もプラットフォーム依存性はそこまで大きくなかったのだと思われます。また、PowerShell自体もフォルダ・ディレクトリの区切りが "\"と "/"の両方をサポートする、コマンドレットの引数の形式など、マルチプラットフォームに対応しやすくなっているのも大きいかもしれません。</p>
+
+<h1>
+<span id="触ってみて実験" class="fragment"></span><a href="#%E8%A7%A6%E3%81%A3%E3%81%A6%E3%81%BF%E3%81%A6%E5%AE%9F%E9%A8%93"><i class="fa fa-link"></i></a>触ってみて実験</h1>
+
+<ol>
+<li>改行が変なことになることを発見。 → 端末エミュレータの横幅が狭すぎると折り返しが入るだけだった。</li>
+<li>typeコマンドがどうなるのか実験 → PowerShellの組み込み(Get-Content)として認識される。Linuxのtypeの方を使うには<code>bash -c type 引数</code>
+とすれば良い。</li>
+<li>日本語入力 → typeコマンドで文字化けしたファイルを表示したりすると、Ibusを使っているときは変な表示になることもある。</li>
+<li>プロファイルの場所 →  ${HOME}/.config/powershell/Microsoft.PowerShell_profile.ps1</li>
+<li>Linux側の環境変数の表示 → <code>bash -c echo `$LANG</code> もしくは<code>printenv LANG</code>
+</li>
+<li>shebang → <code>#!/usr/bin/powershell</code> で大丈夫。WindowsだとPowerShellのスクリプトの実行制限は厳しいですが、Linuxだとそうでもないようです。</li>
+</ol>
+
+<h1>
+<span id="できることできないこと" class="fragment"></span><a href="#%E3%81%A7%E3%81%8D%E3%82%8B%E3%81%93%E3%81%A8%E3%81%A7%E3%81%8D%E3%81%AA%E3%81%84%E3%81%93%E3%81%A8"><i class="fa fa-link"></i></a>できること、できないこと</h1>
+
+<p>.NET Frameworkの機能を使うことは可能ですが、電源管理などの権限の関係で使えないもの、WMIのようにWindows固有のものなどは使えません。<br>
+また、<code>ls</code>などもエイリアスではなく元のコマンドが使えるようになっており、Windows向けに作ったps1ファイルだとうまく動かない可能性があります。</p>
+
+<p>sshを用いてWindowsのPowerShellを操作することもできるようになっています。<br>
+<a href="https://github.com/PowerShell/PowerShell/tree/master/demos/SSHRemoting" class="autolink" rel="nofollow noopener" target="_blank">https://github.com/PowerShell/PowerShell/tree/master/demos/SSHRemoting</a></p>

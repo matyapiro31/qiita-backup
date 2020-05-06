@@ -1,0 +1,18 @@
+
+<h1>
+<span id="色々とあります" class="fragment"></span><a href="#%E8%89%B2%E3%80%85%E3%81%A8%E3%81%82%E3%82%8A%E3%81%BE%E3%81%99"><i class="fa fa-link"></i></a>色々とあります</h1>
+
+<p>apt-<em>hoge</em>系は多いです。<br>
+よく使うもの:<br>
+apt-get<br>
+apt-cache<br>
+便利なもの:<br>
+apt-file aptによってインストールされたファイルについて調べてくれます。<br>
+<code>apt-file search File1</code><br>
+でファイルFile1がどのパッケージに属するか分かります。これsynapticに加わってくれないかな。<br>
+ちなみにdpkgだけだとそんなコマンドはないので<br>
+<code>echo "$(dpkg -S * 2&gt;/dev/null|grep</code><em><code>File1</code></em><code>)"</code><br>
+で行けます。.debからのインストールも探す場合はこれ。<br>
+apt-rdepends 依存関係、ビルド依存関係を再帰的に調べてくれます。<br>
+apt-rdepends --reverse revertが正しい気もしますが、そのパッケージに依存しているパッケージが再帰的に調べられます。かなり強力で、コードのサンプルなどが無い時などに、そのコードを使っているパッケージはあるのか探すのに、非常に役に立ちます。<br>
+<a href="https://wiki.archlinuxjp.org/index.php/Pacman_%E6%AF%94%E8%BC%83%E8%A1%A8" rel="nofollow noopener" target="_blank">このへん</a>を参考にするといいと思います。Archですが。</p>

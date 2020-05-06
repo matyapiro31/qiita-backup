@@ -1,0 +1,125 @@
+
+<h1>
+<span id="制御構文statementとは何ぞや" class="fragment"></span><a href="#%E5%88%B6%E5%BE%A1%E6%A7%8B%E6%96%87statement%E3%81%A8%E3%81%AF%E4%BD%95%E3%81%9E%E3%82%84"><i class="fa fa-link"></i></a>制御構文(statement)とは何ぞや</h1>
+
+<p>制御構文とは処理を制御するための文法構造のことです。そのまま言っただけですが、制御構文をうまく利用することがプログラミングの上達に深く関わってきます。しかし、自然言語とは異なる文法を持つためにか、非常にわかりにくい書き方をする人もいます。過不足無く制御構文を書くやり方を紹介します。</p>
+
+<h1>
+<span id="失敗例1" class="fragment"></span><a href="#%E5%A4%B1%E6%95%97%E4%BE%8B1"><i class="fa fa-link"></i></a>失敗例1</h1>
+
+<p>C言語による簡単な通貨換算プログラムを例に採ってみます。</p>
+
+<div class="code-frame" data-lang="c">
+<div class="code-lang"><span class="bold">exchange.c</span></div>
+<div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">orig</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">char</span> <span class="n">exch</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="cm">/*円ドル換算*/</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span><span class="n">orig</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">exch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'$'</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mo">00</span><span class="mi">81</span> <span class="o">*</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">sprintf</span><span class="p">(</span><span class="n">exch</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="s">"%d"</span><span class="p">,</span><span class="n">tmp</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">exch</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'$'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">exch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\\'</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="mi">124</span><span class="p">.</span><span class="mi">21</span> <span class="o">*</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">sprintf</span><span class="p">(</span><span class="n">exch</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="s">"%d"</span><span class="p">,</span><span class="n">tmp</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">exch</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Error:input incorrect.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>これは効率が悪いです。同じ処理を別々の条件の中に書いてしまっています。(それ以外にもベタに初心者くさいのもわざとです。)<br>
+<code>else {~}</code>では同じ処理ができないので仕方ないじゃん!と主張する人もいます。ではこれをどう改良するのか?次の例のような書き方をする人もいます。</p>
+
+<h1>
+<span id="失敗例2" class="fragment"></span><a href="#%E5%A4%B1%E6%95%97%E4%BE%8B2"><i class="fa fa-link"></i></a>失敗例2</h1>
+
+<div class="code-frame" data-lang="c">
+<div class="code-lang"><span class="bold">exchange2.c</span></div>
+<div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">orig</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">char</span> <span class="n">exch</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="cm">/*円ドル換算*/</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span><span class="n">orig</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="o">||</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'$'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">exch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="o">?</span><span class="sc">'$'</span><span class="o">:</span><span class="sc">'\\'</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="o">?</span><span class="mi">0</span><span class="p">.</span><span class="mo">00</span><span class="mi">81</span> <span class="o">*</span> <span class="n">tmp</span><span class="o">:</span><span class="mi">124</span><span class="p">.</span><span class="mi">21</span> <span class="o">*</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">sprintf</span><span class="p">(</span><span class="n">exch</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="s">"%d"</span><span class="p">,</span><span class="n">tmp</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">exch</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Error:input incorrect.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>なんとなくワイド文字にしてみましたが、意味はありません。先ほどと違って2つの処理をきちんとまとめています。しかし、これでもまだ失敗です。<br>
+<code>else {~}</code>の部分がまだ残っています。あまりにも<code>{}</code>が増えすぎると何がどこの括弧の中なのかさっぱりわからないだけでなくインデントが増えて大変見にくくなります。</p>
+
+<h1>
+<span id="自分が精一杯に簡潔に書いた例" class="fragment"></span><a href="#%E8%87%AA%E5%88%86%E3%81%8C%E7%B2%BE%E4%B8%80%E6%9D%AF%E3%81%AB%E7%B0%A1%E6%BD%94%E3%81%AB%E6%9B%B8%E3%81%84%E3%81%9F%E4%BE%8B"><i class="fa fa-link"></i></a>自分が精一杯に簡潔に書いた例</h1>
+
+<div class="code-frame" data-lang="c">
+<div class="code-lang"><span class="bold">exchange3.c</span></div>
+<div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;
+#define X '$' ^ '\\'
+</span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">orig</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">exc</span><span class="p">;</span>
+    <span class="cm">/*円ドル換算*/</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span><span class="n">orig</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="sc">'\\'</span><span class="o">&amp;&amp;</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="sc">'$'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Error:input incorrect.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="cm">/*それぞれの変換レートで変換*/</span>
+    <span class="n">exc</span> <span class="o">=</span> <span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="o">?</span><span class="mi">0</span><span class="p">.</span><span class="mo">00</span><span class="mi">81</span><span class="o">:</span><span class="mi">124</span><span class="p">.</span><span class="mi">21</span><span class="p">)</span> <span class="o">*</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%c%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">X</span><span class="p">,</span><span class="n">exc</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>元の<code>else {~}</code>の処理は後にコードが無いのでreturn文を書いて終了しています。これで処理されるのは条件が合致している場合だけです。<br>
+おかげで制御構造が一つ減っています。<br>
+当たり前なんですが、ほとんど実行速度に差はありませんでした。<br>
+実際もっと短くできるけど見づらいと意味ないのでこれも失敗例としてあげときます｡</p>
+
+<h1>
+<span id="失敗例3" class="fragment"></span><a href="#%E5%A4%B1%E6%95%97%E4%BE%8B3"><i class="fa fa-link"></i></a>失敗例3</h1>
+
+<div class="code-frame" data-lang="c">
+<div class="code-lang"><span class="bold">exchange4.c</span></div>
+<div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+</span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">orig</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span><span class="n">orig</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="sc">'\\'</span><span class="o">&amp;&amp;</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="sc">'$'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">abort</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%c%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="sc">'$'</span> <span class="o">^</span> <span class="sc">'\\'</span><span class="p">,(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="o">?</span><span class="mi">0</span><span class="p">.</span><span class="mo">00</span><span class="mi">81</span><span class="o">:</span><span class="mi">124</span><span class="p">.</span><span class="mi">21</span><span class="p">)</span> <span class="o">*</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">));</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>こう書くと元の半分以下になりますが､分かりづらい上に実際大して上の3つと変わりません｡極力一回しか使わなくてもマクロか変数宣言はしたほうが何をしているのか分かりやすくなります｡</p>

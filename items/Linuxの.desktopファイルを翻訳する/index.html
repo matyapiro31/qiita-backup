@@ -1,0 +1,55 @@
+
+<h1>
+<span id="前述" class="fragment"></span><a href="#%E5%89%8D%E8%BF%B0"><i class="fa fa-link"></i></a>前述</h1>
+
+<p>LinuxではUTF-8を標準で使用し、オープンソースが一般的であることから、翻訳ができるアプリケーションが非常に多いです。そのため、ソフトウェアの絶対数が少なくても、日本語で利用できるソフトウェアが多いのでしょう。<br>
+ さて、デスクトップエントリファイルを編集すると、言語毎に表示するアプリケーションの名前が変えられます。デスクトップエントリファイルを翻訳する方法はいくつかあるので、それぞれ紹介していきます。</p>
+
+<h1>
+<span id="壱-ファイル自体を編集する場合" class="fragment"></span><a href="#%E5%A3%B1-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E8%87%AA%E4%BD%93%E3%82%92%E7%B7%A8%E9%9B%86%E3%81%99%E3%82%8B%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>壱. ファイル自体を編集する場合</h1>
+
+<p>freedesktop形式のファイルは一般的に改行形式で<br>
+<em>変数</em>=<em>文字列</em><br>
+という書き方が為されています。ここで、一つ重要なことはそれぞれの変数ごとに対応する文字列の文法が異なるということです。例えばMIMEタイプの指定には変数MimeTypeを使い、直接MIMEタイプ文字列を使って記述しているのに対し、実行コマンドの指定には変数Execを使い、おそらく標準のシェルで実行されるコマンドを直接記述しているため、例えば前者と後者では/(スラッシュ)の意味が変わってしまいます。<br>
+これに注意するのはおそらく当たり前のことですが、文法エラーはプログラムのコンパイル時にはチェックされないのでくれぐれも文法の分かる部分だけを訳すようにしてください。<br>
+さて、翻訳の方法ですが、<br>
+<em>翻訳したい変数</em>[<em>LCID</em>]=<em>翻訳した文字列</em><br>
+と、至って簡単です。日本語の場合、[ja]や[ja_JP]もどちらでも使用できます。<br>
+また、この場合は<em>変数</em>=<em>文字列</em>が存在していなくても問題ありません。</p>
+
+<h1>
+<span id="弐-intltool対応のin形式のファイルの場合" class="fragment"></span><a href="#%E5%BC%90-intltool%E5%AF%BE%E5%BF%9C%E3%81%AEin%E5%BD%A2%E5%BC%8F%E3%81%AE%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>弐. intltool対応の.in形式のファイルの場合</h1>
+
+<p>intltoolに対応しているとき、通常.desktop.inファイルを編集することになります。<br>
+この場合は必要な操作は、<br>
+1. .desktop.inファイルの編集 - .in形式のファイルはintltoolを用いて翻訳データを収集するし、変換するためのものです。この形式も統一性に欠けているという面があり、変換対象のファイルの種類によって指定の仕方が違います。.desktop形式の場合は<br>
+<em>変数</em>=<em>文字列</em><br>
+を<em>(アンダーバー)を付けた<br>
+*</em>変数<em>=</em>文字列*<br>
+に編集します。<br>
+2. POTFILES.inファイルの編集 - POTFILES.inファイルに一行.desktop.inファイルののパスを挿入します。<br>
+3. <em>言語コード</em>.poファイルの編集 - PoEditやGtranslatorなどで翻訳してください。</p>
+
+<h1>
+<span id="參-intltoolに対応させたい場合" class="fragment"></span><a href="#%E5%8F%83-intltool%E3%81%AB%E5%AF%BE%E5%BF%9C%E3%81%95%E3%81%9B%E3%81%9F%E3%81%84%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>參 intltoolに対応させたい場合</h1>
+
+<h2>
+<span id="其之一-autotoolsを使っている場合" class="fragment"></span><a href="#%E5%85%B6%E4%B9%8B%E4%B8%80-autotools%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>其之一 AutoToolsを使っている場合</h2>
+
+<p>Makefile.amに<br>
+desktopdir = <em>hoge</em><br>
+desktop_in_files = <em>hoge</em>.desktop<br>
+desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)<br>
+<a href="/INTLTOOL_DESKTOP_RULE" class="user-mention js-hovercard" title="INTLTOOL_DESKTOP_RULE" data-hovercard-target-type="user" data-hovercard-target-name="INTLTOOL_DESKTOP_RULE">@INTLTOOL_DESKTOP_RULE</a>@<br>
+を挿入し、.desktopファイルを.desktop.inに名前を変更する。<br>
+.desktopファイルが無いとか、configure.acレベルで対応していない場合?知りません。</p>
+
+<h2>
+<span id="其之二-cmakeを使っている場合" class="fragment"></span><a href="#%E5%85%B6%E4%B9%8B%E4%BA%8C-cmake%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>其之二 CMakeを使っている場合</h2>
+
+<p>.cmakeファイルの文法について解説はできないので、とりあえずCMakeでやりたい場合は直接intltoolのコマンドを実行する。<br>
+<code>intltool-merge --desktop-style</code> <em><code>POTFILES.inファイルの在るディレクトリ</code></em> <em><code>hoge</code></em>.desktop.in <em><code>hoge</code></em><code>.desktop</code><br>
+実行のタイミングやターゲット、インストールの設定などはそれぞれ、<br>
+<a href="http://www.cmake.org/cmake/help/v3.2/command/add_custom_target.html" rel="nofollow noopener" target="_blank">add_custom_target</a><br>
+<a href="http://www.cmake.org/cmake/help/v3.2/command/install.html" rel="nofollow noopener" target="_blank">install</a><br>
+などを参考にしてください。</p>

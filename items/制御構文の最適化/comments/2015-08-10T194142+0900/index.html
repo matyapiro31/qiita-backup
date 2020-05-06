@@ -1,0 +1,34 @@
+<p>要するに入力の先頭の文字を見て変換先の通貨と交換レートを決めるというところだけ処理が異なるわけですから、このようにするのがよさげだと思います。</p>
+
+<div class="code-frame" data-lang="c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">orig</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">char</span> <span class="n">exch</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="kt">float</span> <span class="n">rate</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">toCurrency</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">tmp</span><span class="p">;</span>
+
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span><span class="n">orig</span><span class="p">);</span>
+
+    <span class="k">switch</span> <span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="sc">'\\'</span><span class="p">:</span>
+            <span class="n">toCurrency</span> <span class="o">=</span> <span class="sc">'$'</span><span class="p">;</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mo">00</span><span class="mi">81</span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="sc">'$'</span><span class="p">:</span>
+            <span class="n">toCurrency</span> <span class="o">=</span> <span class="sc">'\\'</span><span class="p">;</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="mi">124</span><span class="p">.</span><span class="mi">21</span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="nl">default:</span> 
+            <span class="n">printf</span><span class="p">(</span><span class="s">"Error:input incorrect.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="n">sprintf</span><span class="p">(</span><span class="n">exch</span><span class="p">,</span> <span class="s">"%c%d"</span><span class="p">,</span> <span class="n">toCurrency</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">exch</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div></div>

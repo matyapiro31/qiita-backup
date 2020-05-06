@@ -1,0 +1,138 @@
+
+<h1>
+<span id="cssファイルの容量を小さくする方法" class="fragment"></span><a href="#css%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E5%AE%B9%E9%87%8F%E3%82%92%E5%B0%8F%E3%81%95%E3%81%8F%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95"><i class="fa fa-link"></i></a>CSSファイルの容量を小さくする方法</h1>
+
+<p>Redditは国際掲示板でsubredditという2ちゃんねるでいうところの版に相当するものがあります。<br>
+subredditは誰でも作成が可能でCSSでデザインをいじることが可能です。<br>
+しかしRedditでは100KiBまでしかCSSファイルを作られないので、ファイルサイズを縮小する必要に迫られました。<br>
+このテクニックは人に見やすいようにすることは考えずにブラウザが解釈できる限り最小化するためのものです。<br>
+1. 最後のセミコロンは省略する - 最後は不要です。<br>
+2. 0に単位を付けない。 長さ0には単位は不要です。<br>
+3. 色は<code>rgb()</code>や<code>rgba()</code>ではなく<code>#RRGGBB</code>や<code>#RGB</code>,を使う。もしくは<code>white</code>,<code>blue</code>などの名称付きの色にする。<br>
+4. 同じプロパティの場合はカンマを使って共通化する。<br>
+5. 同じ名前を含むクラス名やID名は属性セレクタを使って共通化する。<br>
+6. クラス・ID名または要素名を省略する - どちらか一方で十分な時は省略します。<br>
+7. <code>font</code>や<code>background</code>などを一つに纏める。 - 結構効きます。<br>
+8. 他のプロパティに置き換える- <code>translate</code>を<code>top</code>と<code>left</code>に置き換える、transformをmatrix系で纏めるなど。<br>
+9. Minifierツールを使う - コメントやインデントのスペースなどを削除します。リリース用。</p>
+
+<h1>
+<span id="1-セミコロンの省略" class="fragment"></span><a href="#1-%E3%82%BB%E3%83%9F%E3%82%B3%E3%83%AD%E3%83%B3%E3%81%AE%E7%9C%81%E7%95%A5"><i class="fa fa-link"></i></a>1. セミコロンの省略</h1>
+
+<p>CSSは最後のプロパティのみ、セミコロンを省略できます。これが結構最小化のためには効いてきます。</p>
+
+<h1>
+<span id="2-単位の省略" class="fragment"></span><a href="#2-%E5%8D%98%E4%BD%8D%E3%81%AE%E7%9C%81%E7%95%A5"><i class="fa fa-link"></i></a>2. 単位の省略</h1>
+
+<p><code>0px</code>や<code>0em</code>などは単位を省略できます。また0.1など0.で始まる小数も0を省略できます。</p>
+
+<h1>
+<span id="3-rrggbbを使う" class="fragment"></span><a href="#3-rrggbb%E3%82%92%E4%BD%BF%E3%81%86"><i class="fa fa-link"></i></a>3. <code>#RRGGBB</code>を使う</h1>
+
+<p><code>rgb()</code>は<code>#RRGGBB</code>形式に変換できます。こちらのほうが16進数で表記できるので文字数を短くできます。さらに0x11の倍数の場合、<code>#RRGGBB</code>を<code>#RGB</code>と書くことが出来ます。</p>
+
+<h1>
+<span id="4-プロパティの共通化" class="fragment"></span><a href="#4-%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3%E3%81%AE%E5%85%B1%E9%80%9A%E5%8C%96"><i class="fa fa-link"></i></a>4. プロパティの共通化</h1>
+
+<p>異なる要素やクラスでも同じプロパティを複数持っている場合は共通化してしまえます。同じものを長々と何度も書くよりも見やすくなるでしょう。</p>
+
+<h1>
+<span id="5-クラス名の共通化" class="fragment"></span><a href="#5-%E3%82%AF%E3%83%A9%E3%82%B9%E5%90%8D%E3%81%AE%E5%85%B1%E9%80%9A%E5%8C%96"><i class="fa fa-link"></i></a>5. クラス名の共通化</h1>
+
+<p>クラス名<code>aaa-bbb</code>と<code>aaa-ccc</code>があった場合、共通の部分を書く時は</p>
+
+<div class="code-frame" data-lang="css">
+<div class="code-lang"><span class="bold">例1</span></div>
+<div class="highlight"><pre><span class="nc">.aaa-bbb</span><span class="o">,</span><span class="nc">.aaa-ccc</span> <span class="p">{</span>
+    <span class="py">property</span><span class="p">:</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>と書きますが、クラスも属性なので、属性セレクタを使ってこういう書き方もできます。</p>
+
+<div class="code-frame" data-lang="css">
+<div class="code-lang"><span class="bold">例2</span></div>
+<div class="highlight"><pre><span class="o">[</span><span class="nt">class</span><span class="o">^=</span><span class="s1">"aaa-"</span><span class="o">]</span> <span class="p">{</span>
+    <span class="py">property</span><span class="p">:</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>ただしこの書き方だと除外したいクラス<code>aaa-ddd</code>などがあった時には不具合の元になります。<br>
+全体で共通化させることが必要です。</p>
+
+<h1>
+<span id="6-クラスidまたは要素を省略" class="fragment"></span><a href="#6-%E3%82%AF%E3%83%A9%E3%82%B9id%E3%81%BE%E3%81%9F%E3%81%AF%E8%A6%81%E7%B4%A0%E3%82%92%E7%9C%81%E7%95%A5"><i class="fa fa-link"></i></a>6. クラス・IDまたは要素を省略</h1>
+
+<p>そのクラス名や要素名は省略できないか考えてください。例えば、<code>title</code>クラスが全てa要素ならわざわざ<code>a.title</code>と書かず、<code>.title</code>で十分です。<br>
+もしくは、<code>a[href="~"]</code>を[href="~"]とするなど。また、ID名が決まっている時はクラス名も要素名も不要です。</p>
+
+<h1>
+<span id="7-プロパティを一つにまとめて書く" class="fragment"></span><a href="#7-%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3%E3%82%92%E4%B8%80%E3%81%A4%E3%81%AB%E3%81%BE%E3%81%A8%E3%82%81%E3%81%A6%E6%9B%B8%E3%81%8F"><i class="fa fa-link"></i></a>7. プロパティを一つにまとめて書く</h1>
+
+<p>fontやbackgroundなどのプロパティは<code>font-size</code>や<code>background-color</code>などで分けて書くことができます。これを纏めるとかなりサイズが小さくなります。ただし、下のような場合は纏めないほうが無難です。</p>
+
+<div class="code-frame" data-lang="css">
+<div class="code-lang"><span class="bold">例3</span></div>
+<div class="highlight"><pre><span class="nc">.example2</span> <span class="p">{</span>
+    <span class="nl">background-color</span><span class="p">:</span> <span class="no">red</span><span class="p">;</span>
+    <span class="nl">background-position</span><span class="p">:</span> <span class="m">10px</span> <span class="m">10px</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nt">example1</span><span class="nc">.example2</span> <span class="p">{</span>
+    <span class="nl">background-image</span><span class="p">:</span> <span class="sx">url("://example.com/")</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>これは以下と等価です。</p>
+
+<div class="code-frame" data-lang="css">
+<div class="code-lang"><span class="bold">例4</span></div>
+<div class="highlight"><pre><span class="nc">.example2</span> <span class="p">{</span>
+    <span class="nl">background-color</span><span class="p">:</span> <span class="no">red</span><span class="p">;</span>
+    <span class="nl">background-position</span><span class="p">:</span> <span class="m">10px</span> <span class="m">10px</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nc">.example1.exapmle2</span> <span class="p">{</span>
+    <span class="nl">background</span><span class="p">:</span> <span class="sx">url("://example.com/")</span> <span class="m">10px</span> <span class="m">10px</span> <span class="no">red</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>このとき上も下も<code>background</code>で書くと上の<code>background</code>で指定した値が消されてしまいます。ただし、<code>inherit</code>を用いれば問題ないはずです。</p>
+
+<h1>
+<span id="8-他のプロパティに置き換える" class="fragment"></span><a href="#8-%E4%BB%96%E3%81%AE%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3%E3%81%AB%E7%BD%AE%E3%81%8D%E6%8F%9B%E3%81%88%E3%82%8B"><i class="fa fa-link"></i></a>8. 他のプロパティに置き換える</h1>
+
+<p>置き換えられる例を紹介します。</p>
+
+<p><code>translate</code> -&gt; <code>left,top</code></p>
+
+<div class="code-frame" data-lang="css">
+<div class="code-lang"><span class="bold">例5</span></div>
+<div class="highlight"><pre><span class="nt">element</span> <span class="p">{</span>
+    <span class="err">translate(10px,-10px);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>は此れと等価です。IE9にも対応できて幸せになります。</p>
+
+<div class="code-frame" data-lang="css">
+<div class="code-lang"><span class="bold">例6</span></div>
+<div class="highlight"><pre><span class="nt">element</span> <span class="p">{</span>
+    <span class="nl">position</span><span class="p">:</span> <span class="nb">relative</span><span class="p">;</span>
+    <span class="nl">left</span><span class="p">:</span> <span class="m">10px</span><span class="p">;</span>
+    <span class="nl">top</span><span class="p">:</span> <span class="m">-10px</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p><code>transform</code>要素で使える関数<code>translate()</code>,<code>skew()</code>,<code>scale()</code>,<code>rotate()</code>は全て線形変換です。線形変換が何かは線形代数をやれば分かりますが、これは全て行列、もっと言えば連立一次方程式で表現が可能なので、<code>matrix()</code>で表現できます。3dの場合も同様なんですが、こっちは引数が面倒なのでやらないほうがいいかもしれません。</p>
+
+<h1>
+<span id="9-minifierを使う" class="fragment"></span><a href="#9-minifier%E3%82%92%E4%BD%BF%E3%81%86"><i class="fa fa-link"></i></a>9. minifierを使う</h1>
+
+<p>minifier(最小化)ツールを使えば自動的に無駄な空白やセミコロンやコメントを削除してくれます。<br>
+大抵はこれを利用するのが基本です。私は此れを使っています。<a href="https://cssminifier.com/" rel="nofollow noopener" target="_blank">CSS Minifier</a></p>

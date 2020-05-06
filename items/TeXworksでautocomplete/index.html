@@ -1,0 +1,93 @@
+
+<h1>
+<span id="texworksでintellisenseみたいなことがしたい" class="fragment"></span><a href="#texworks%E3%81%A7intellisense%E3%81%BF%E3%81%9F%E3%81%84%E3%81%AA%E3%81%93%E3%81%A8%E3%81%8C%E3%81%97%E3%81%9F%E3%81%84"><i class="fa fa-link"></i></a>TeXworksでIntellisenseみたいなことがしたい</h1>
+
+<p>TeXworksってどうも旧いソフトなので入力補完とかないのかな、と思ったらありました。<br>
+入力データ用のファイルを用意する必要があります。</p>
+
+<h1>
+<span id="入力データファイルの形式と文法" class="fragment"></span><a href="#%E5%85%A5%E5%8A%9B%E3%83%87%E3%83%BC%E3%82%BF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E5%BD%A2%E5%BC%8F%E3%81%A8%E6%96%87%E6%B3%95"><i class="fa fa-link"></i></a>入力データファイルの形式と文法</h1>
+
+<p>入力データファイルの書き方について説明します。<br>
+1. 文字コードはUTF-8(BOMなし)<br>
+2. 改行はLF(他の改行でも行けるかどうかは不明)<br>
+3. ファイル名は*.txt<br>
+4. 最初の行に<b><code>%%!TEX encoding = UTF-8 Unicode</code></b>という文言を入れる。shebangの一種?<br>
+という形式で書いてください。</p>
+
+<h1>
+<span id="ファイルの保存場所" class="fragment"></span><a href="#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E4%BF%9D%E5%AD%98%E5%A0%B4%E6%89%80"><i class="fa fa-link"></i></a>ファイルの保存場所</h1>
+
+<p>ここが問題です。<br>
+Ubuntuだと<code>~/.TeXworks/completion/</code>以下になりますが、このディレクトリがどこになっているのかは明確にTeXworksのドキュメントには述べられていません。(<code>&lt;resources folder&gt;/completion</code>という書き方をされています。)<br>
+このフォルダを開くにはTeXworksのメニューから「スクリプト」→「TeXworksスクリプト」→「スクリプトフォルダを開く」で<code>&lt;resouces folder&gt;/scripts</code>を開いて一つ上のフォルダを参照し、</p>
+
+<blockquote>
+<p><strong>completion  configuration  scripts  translations</strong></p>
+</blockquote>
+
+<p>とある中の<strong><code>completion</code></strong>を選んでください。</p>
+
+<h1>
+<span id="ファイルの書き方" class="fragment"></span><a href="#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9"><i class="fa fa-link"></i></a>ファイルの書き方</h1>
+
+<p>まず、特殊文字について説明します。<br>
+1. #RET# - 改行を挿入します。<br>
+2. #INS# - 入力位置をここに設定します。ない場合、最後方になります。<br>
+3. • - bullet。日本語キーボードの/のところの文字(中黒)とは違います。Qiitaだとリストのところにあるやつです。Ctrl+Tabで移動できる栞みたいな機能を提供します。印刷されません。印刷したいときは数式モードを使ってください。<br>
+区切り文字は改行(LF)です。</p>
+
+<h2>
+<span id="1-置換型" class="fragment"></span><a href="#1-%E7%BD%AE%E6%8F%9B%E5%9E%8B"><i class="fa fa-link"></i></a>1. 置換型</h2>
+
+<p>書かれた文字列を置換します。</p>
+
+<div class="code-frame" data-lang="tex"><div class="highlight"><pre>bequ
+</pre></div></div>
+
+<p>と入力し、TABキーを入力すると、<code>bequ</code>が</p>
+
+<div class="code-frame" data-lang="tex"><div class="highlight"><pre><span class="nt">\begin{equation}</span>
+
+<span class="nt">\end{equation}</span>•
+</pre></div></div>
+
+<p>に置き換わります。<br>
+構文は</p>
+
+<div class="code-frame" data-lang="tex"><div class="highlight"><pre>xph:=<span class="k">\phi</span>
+bfrm:=<span class="nt">\begin{frame}</span>#RET##INS##RET#<span class="nt">\end{frame}</span>
+</pre></div></div>
+
+<p>このように<code>キーワード:=置換される内容</code>という構文です。</p>
+
+<h2>
+<span id="2-挿入型" class="fragment"></span><a href="#2-%E6%8C%BF%E5%85%A5%E5%9E%8B"><i class="fa fa-link"></i></a>2. 挿入型</h2>
+
+<p>内容を追記します。</p>
+
+<div class="code-frame" data-lang="tex"><div class="highlight"><pre><span class="k">\column</span>
+</pre></div></div>
+
+<p>と入力すると、TABキーの入力で</p>
+
+<div class="code-frame" data-lang="tex"><div class="highlight"><pre><span class="k">\column</span><span class="p">{}</span>
+</pre></div></div>
+
+<p>と{}が追加されます。さらに入力位置も{}の中になります。<br>
+構文は</p>
+
+<div class="code-frame" data-lang="tex"><div class="highlight"><pre><span class="k">\column</span><span class="p">{</span>#INS#<span class="p">}</span>
+<span class="k">\column</span><span class="na">[•]</span><span class="p">{</span>#INS#<span class="p">}</span>
+<span class="p">{</span>column<span class="p">}{</span>#INS#<span class="p">}</span>#RET##RET#<span class="nt">\end{column}</span>
+<span class="p">{</span>column<span class="p">}</span>[•]<span class="p">{</span>#INS#<span class="p">}</span>#RET##RET#<span class="nt">\end{column}</span>
+<span class="p">{</span>columns<span class="p">}</span>#RET##INS##RET#<span class="nt">\end{columns}</span>
+<span class="p">{</span>columns<span class="p">}</span>[•]#RET##INS##RET#<span class="nt">\end{columns}</span>
+</pre></div></div>
+
+<p>のようになります。</p>
+
+<h1>
+<span id="入力の仕方" class="fragment"></span><a href="#%E5%85%A5%E5%8A%9B%E3%81%AE%E4%BB%95%E6%96%B9"><i class="fa fa-link"></i></a>入力の仕方</h1>
+
+<p>3文字以上を入力してTABキーを入力すると当て嵌まる候補が出ます。TABキーで次の候補に切り替えられます。</p>

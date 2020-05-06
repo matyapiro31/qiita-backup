@@ -1,0 +1,94 @@
+
+<h1>
+<span id="需要" class="fragment"></span><a href="#%E9%9C%80%E8%A6%81"><i class="fa fa-link"></i></a>需要</h1>
+
+<p>Debianは現時点で一番多くのアーキテクチャをサポートするOSです。alphaやsparcといった、誰が使うか分からないようなアーキテクチャもサポートしています。(sparcはスパコンの京を使える人なら触るかも。)しかしながらこれら向けにクロスコンパイルするのは並大抵のことではありません。コマンドしか用意しない体質に問題があるような気もしますが、とにかく面倒くさかったので書きます。</p>
+
+<h1>
+<span id="導入" class="fragment"></span><a href="#%E5%B0%8E%E5%85%A5"><i class="fa fa-link"></i></a>導入</h1>
+
+<p>必要なパッケージをインストール<br>
+<code>sudo apt-get install schroot debootstrap qemu-user-static</code><br>
+例えばarmhf(新しい方)でchrootするにはDebianの場合<br>
+<code>qemu-debootstrap --arch=armhf sid /srv/chroot/sid-armhf ftp://ftp.debian.org/debian/</code><br>
+Ubuntuの場合<br>
+<code>qemu-debootstrap --arch=armhf trusty /srv/chroot/trusty-armhf http://ports.ubuntu.com/ubuntu-ports/</code><br>
+qemu-debootstrapはqemuでのエミュレートを自動で設定してくれる便利なツールです。<br>
+chrootしてrootを切り替えます。<br>
+<code>sudo chroot /srv/chroot/sid-armhf</code><br>
+<code>sudo chroot /srv/chroot/trusty-armhf</code><br>
+<code>arch</code>コマンドで確認してください。<br>
+しかしこれではapt-getなどの重要なツールが導入されていません。なぜか分かりませんが。<br>
+/var/cache/apt/archivesにパッケージがダウンロードだけされていたりします。<br>
+強制インストールしても問題ありません。<br>
+<code>dpkg -i --force-all /var/cache/apt/archives/*.deb</code><br>
+次にaptで使うリポジトリの設定です。<br>
+debootstrapが設定した適当なものになっているので、それぞれ<br>
+<code>deb http://ftp.debian.org/debian sid main</code><br>
+<code>deb http://ports.ubuntu.com/ubuntu-ports/ trusty main</code><br>
+に設定してください。<br>
+echoコマンドで設定するのがいいかと思います。<br>
+認証鍵が無い時があるので、<br>
+<code>W: There is no public key available for the following key IDs:<br>
+KEY_NAME</code><br>
+と出るので、<br>
+<code>apt-key adv --keyserver keyserver.ubuntu.com --recv-keys KEY_NAME</code><br>
+とコマンドを打って、鍵を追加してください。<br>
+次にlocaleとkeyboardを設定します。<br>
+/etc/default/localeと/etc/default/keyboardの元のファイルをコピーしてください。<br>
+日本語化はDebianは知りませんが、Ubuntuは<br>
+<code>apt-get install language-pack-ja</code><br>
+で導入できます。<br>
+次に通常ユーザの作成です。sudoできるように<br>
+<code>adduser hoge</code><br>
+<code>gpasswd -a hoge sudo</code><br>
+<strong>I have no name!</strong>とかプロンプトに出ていますが、これを直すには<br>
+<code>sh -c 'echo 127.0.1.1 $(hostname) &gt;&gt; /etc/hosts'</code><br>
+でホスト名を割り当てます。<br>
+通常ユーザに変身するには<br>
+<code>sudo -i -u hoge</code><br>
+です。<br>
+これでqemuを使ったDebian/Ubuntu環境が整いました。</p>
+
+<h1>
+<span id="debhelperを使ってアーキテクチャ別にビルドする" class="fragment"></span><a href="#debhelper%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E5%88%A5%E3%81%AB%E3%83%93%E3%83%AB%E3%83%89%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>debhelperを使ってアーキテクチャ別にビルドする</h1>
+
+<p>通常debianパッケージはdebuildコマンドでビルドできるようになっています。<br>
+署名を抜かします。-aオプションの後にはスペースを入れないでアーキテクチャ名を入れてください。<br>
+<code>debuild -us -uc -aarmhf</code><br>
+autotoolsなどについては「非RootのAndroidにコマンドをインストールする」を参考にしてください。<br>
+Debian/Ubuntuはクロスコンパイルツールが在ったりしますが、原因不明の障害が起こったりするのでqemuを素直に使ったほうがいいということです。</p>
+
+<h1>
+<span id="dockerとの比較" class="fragment"></span><a href="#docker%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83"><i class="fa fa-link"></i></a>Dockerとの比較</h1>
+
+<p>chrootはDockerと似たようなものですが、明らかにDockerより高速であり、ファイルのコピーやダウンロードなども迅速に行えます。その代わりサンドボックスとしてはあまり機能しない他、導入に時間がかかります。debootstrapなのでDebianとUbuntuしか使えないという欠点もあります。qemuが対応するアーキテクチャなら何でも対応できるので今の所amd64しかないDockerよりも柔軟です。</p>
+
+<h1>
+<span id="dockerと組み合わせる" class="fragment"></span><a href="#docker%E3%81%A8%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B"><i class="fa fa-link"></i></a>Dockerと組み合わせる</h1>
+
+<p>Dockerのコンテナ内に構築すればクロスビルド用のイメージが作成できます。その場合でも対応するアーキテクチャはamd64のみであることに注意してください。</p>
+
+<h1>
+<span id="補足" class="fragment"></span><a href="#%E8%A3%9C%E8%B6%B3"><i class="fa fa-link"></i></a>補足</h1>
+
+<p>手前で作ったベンチマークツールを使ってみた所、大体x86_64とarmhf(armv7l)では47倍程度の差がありました。ラズパイ使ったほうが早いような気もします。<br>
+パッケージhelloのコンパイルで試してみた所、6倍の差がありました。これならまだましですね。</p>
+
+<h1>
+<span id="アーキテクチャについて補足" class="fragment"></span><a href="#%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E8%A3%9C%E8%B6%B3"><i class="fa fa-link"></i></a>アーキテクチャについて補足</h1>
+
+<p>ARMのアーキテクチャはやたらややこしいです。特に任天堂ハードは。<br>
+※任天堂の携帯ゲーム機は互換性を持っていますが、基本的に古いCPU+新しいCPUの2つを同時に搭載するという方式を取っています。<br>
+ともかくARMはDebianではarmelとarmhfの2つで区別されており、armelのが古く、armhfのコードは実行できません。<br>
+ラズパイは2になってarmhfに対応しました。<br>
+Debianが対応しているアーキテクチャは他には<br>
+powerpc,aarch64,mips,avr32などがあり、それぞれ前世代の据置型ゲーム機やサーバ、携帯電話、マイコンなどでよく使われています。</p>
+
+<h1>
+<span id="出典" class="fragment"></span><a href="#%E5%87%BA%E5%85%B8"><i class="fa fa-link"></i></a>出典</h1>
+
+<p><a href="http://qiita.com/ogomr/items/89e19829eb8cc08fcebb" class="autolink" id="reference-b6d6bbe577130c9033fa">http://qiita.com/ogomr/items/89e19829eb8cc08fcebb</a><br>
+<a href="https://wiki.debian.org/ArmHardFloatChroot" class="autolink" rel="nofollow noopener" target="_blank">https://wiki.debian.org/ArmHardFloatChroot</a><br>
+<a href="https://ueponx.wordpress.com/2013/09/23/ubuntu%E3%81%AB%E3%81%A6%E6%96%B0%E8%A6%8F%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%ABsudo%E3%81%AE%E6%A8%A9%E9%99%90%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B/" class="autolink" rel="nofollow noopener" target="_blank">https://ueponx.wordpress.com/2013/09/23/ubuntu%E3%81%AB%E3%81%A6%E6%96%B0%E8%A6%8F%E3%83%A6%E3%83%BC%E3%82%B6%E3%81%ABsudo%E3%81%AE%E6%A8%A9%E9%99%90%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B/</a><br>
+<a href="http://www.nsc.riken.jp/jigyoushiwake/QA2.html" class="autolink" rel="nofollow noopener" target="_blank">http://www.nsc.riken.jp/jigyoushiwake/QA2.html</a></p>

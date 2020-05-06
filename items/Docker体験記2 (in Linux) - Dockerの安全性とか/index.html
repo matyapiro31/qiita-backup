@@ -1,0 +1,87 @@
+
+<h1>
+<span id="dockerを非ルートで使うのは危険だ" class="fragment"></span><a href="#docker%E3%82%92%E9%9D%9E%E3%83%AB%E3%83%BC%E3%83%88%E3%81%A7%E4%BD%BF%E3%81%86%E3%81%AE%E3%81%AF%E5%8D%B1%E9%99%BA%E3%81%A0"><i class="fa fa-link"></i></a>Dockerを非ルートで使うのは危険だ</h1>
+
+<p>dockerコマンドのボリュームオプション-vを使えば好きなコンテナ内のディレクトリを好きなホスト内のディレクトリにマウントできますが、これをすると簡単に任意のフォルダにrootのファイルを作成できてしまいます。ユーザをグループdockerに入れるとsudoやsuなしでdockerコマンドを利用できますが、これをするとrootのパスワード無しでrootなファイルを操作することが出来ます｡</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="c">#Ubuntuのイメージを起動</span>
+docker run <span class="nt">-v</span> /mnt:/mnt <span class="nt">-it</span> ubuntu /bin/dash
+<span class="c">#コンテナ内でコマンドを実行してみる</span>
+<span class="nb">touch </span>test.file
+<span class="nb">exit</span>
+<span class="c">#lsで確認する</span>
+<span class="nb">ls</span> <span class="nt">-l</span> /mnt
+<span class="c">#何かrootなファイルができてることがわかる(結果略)</span>
+</pre></div></div>
+
+<p>ただし毎回sudoしていると不便なので早く改善して欲しいですね。<br>
+どういう物が危険か具体的に書くと、<br>
+<code>sudo gpasswd -a hoge docker</code><br>
+のようにするとsudoなしでdockerコマンドが使えるようになりますが、sudoなしでroot権限が手に入れられることになります。</p>
+
+<h1>
+<span id="どんな風に危険なのか" class="fragment"></span><a href="#%E3%81%A9%E3%82%93%E3%81%AA%E9%A2%A8%E3%81%AB%E5%8D%B1%E9%99%BA%E3%81%AA%E3%81%AE%E3%81%8B"><i class="fa fa-link"></i></a>どんな風に危険なのか?</h1>
+
+<ol>
+<li>ユーザ権限の実行可能ファイルがrootのファイルを好き放題にいじれる</li>
+<li>例え管理者でなくても(=一般ユーザでも)行える</li>
+<li>特に目立った制約(いじれないファイルや厳しい条件)がない
+以上より、Windowsでありがちな「何かよくわからないアプリケーションをダウンロードした」が致命傷になります。
+Windowsだと絶対にUACが出ますが、これは出ない上に管理者を取られる最悪クラスです。
+まあ私は知らないスクリプトなんて実行する機会は殆ど無いので大丈夫ですが。</li>
+</ol>
+
+<h1>
+<span id="解決方法" class="fragment"></span><a href="#%E8%A7%A3%E6%B1%BA%E6%96%B9%E6%B3%95"><i class="fa fa-link"></i></a>解決方法</h1>
+
+<p>そもそもLinux使いですがLPICとか受けてないので全く触らないグループの話とか知らない。なので今適当にググって出した解決法です。</p>
+
+<div class="code-frame" data-lang="shell">
+<div class="code-lang"><span class="bold">fix.sh</span></div>
+<div class="highlight"><pre><span class="c">#ユーザhogeをグループdockerから削除する</span>
+<span class="nb">sudo </span>gpasswd <span class="nt">-d</span> hoge docker
+<span class="c">#グループdockerのパスワードを変更する</span>
+<span class="nb">sudo </span>gpasswd docker
+<span class="c">#グループdockerにログインする</span>
+newgrp docker
+</pre></div>
+</div>
+
+<p>このコマンドを実行することによってdocker使用時にパスワード一つでいいことになり、さらに管理者とは別のパスワードを使用できます。<br>
+いちいちsudo付ける必要はありません。</p>
+
+<h1>
+<span id="ありゃ" class="fragment"></span><a href="#%E3%81%82%E3%82%8A%E3%82%83"><i class="fa fa-link"></i></a>ありゃ?</h1>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>#sudoで
+sudo -g docker docker command
+</pre></div></div>
+
+<p>とすればやっぱりパスワードなしでroot権限で実行できるぞ?<br>
+sudo -gで何でパスワードを聞かないんだ?<br>
+何か一回設定するとこうなるみたいで、解決方法は不明です。<br>
+どうもUbuntuだとgpasswd -dではグループからすぐには抜けられないようです。<br>
+idコマンドで確認するとdockerグループに入っていました。<br>
+再起動したら直りましたが、どうも元のuid/gidで動いているプロセスがある限り設定は反映されるようです。</p>
+
+<h1>
+<span id="どうしてもdockerを使いたい時" class="fragment"></span><a href="#%E3%81%A9%E3%81%86%E3%81%97%E3%81%A6%E3%82%82docker%E3%82%92%E4%BD%BF%E3%81%84%E3%81%9F%E3%81%84%E6%99%82"><i class="fa fa-link"></i></a>どうしてもDockerを使いたい時</h1>
+
+<p>Dockerを出来る限り安全に使うにはchattrコマンドが便利です。<br>
+このコマンドを使えばrootでさえも削除ができなくなるという優れたコマンドです。<br>
+このコマンドはext3/ext4などの拡張属性を扱うので、dockerコンテナからは通常は実行できません。mountなどもそうですが、理由は知りません。<br>
+--privilegedオプションをつけると出来るようですが、このオプションを無効化してしまえばファイルの安全は確保できます。ただ通常のコマンドからも操作できなくなります。</p>
+
+<h1>
+<span id="さらなる対策" class="fragment"></span><a href="#%E3%81%95%E3%82%89%E3%81%AA%E3%82%8B%E5%AF%BE%E7%AD%96"><i class="fa fa-link"></i></a>さらなる対策</h1>
+
+<p>さらなる対策としてはAppArmorやchrootが考えられます。<br>
+前者はよく知らないんですが、多分マルウェアがrootを奪取しても大丈夫なようにするやつだったと思うので紹介します。<br>
+後者は完全に隔離環境を作れるからですね。そもそもchrootする手間があるならdocker使わない気もしますが。</p>
+
+<h1>
+<span id="追記" class="fragment"></span><a href="#%E8%BF%BD%E8%A8%98"><i class="fa fa-link"></i></a>追記</h1>
+
+<p>Docker バージョン1.10あたりから名前空間がサポートされ、ホストとコンテナのユーザを分離することが可能になりました。<br>
+ただし、既定の設定のままでは未だに危険性は残っています。<br>
+Dockerがぶっこわれているので検証できないので記事はかけません。</p>

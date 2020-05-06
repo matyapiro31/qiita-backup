@@ -1,0 +1,23 @@
+<p>持ち駒を横に置きたければhspaceやraiseboxを使う。<br>
+とりあえず自分の環境ではこれで良い。chessboardパッケージには結構色々なパッケージやフォントなどが必要だが、全部説明書に書いてあるので省略する。</p>
+
+<div class="code-frame" data-lang="latex">
+<div class="code-lang"><span class="bold">chess.tex</span></div>
+<div class="highlight"><pre><span class="k">\usepackage</span><span class="p">{</span>chessboard<span class="p">}</span>
+<span class="k">\usepackage</span><span class="p">{</span>chessfss<span class="p">}</span>
+<span class="k">\usepackage</span><span class="na">[inline, shortlabels]</span><span class="p">{</span>enumitem<span class="p">}</span><span class="c">%改行なしでリスト化するためのパッケージ</span>
+<span class="k">\def\myfen</span><span class="p">{</span>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR<span class="p">}</span><span class="c">%FENの設定</span>
+<span class="k">\chessboard</span><span class="na">[setfen=\myfen]</span><span class="c">%ボードを表示</span>
+<span class="k">\raisebox</span><span class="p">{</span>30ex<span class="p">}{</span><span class="k">\huge</span><span class="p">{</span><span class="k">\BlackQueenOnWhite\BlackQueenOnWhite</span><span class="p">}}</span><span class="c">%黒の駒を横に</span>
+<span class="k">\hspace</span><span class="p">{</span>-8.5ex<span class="p">}{</span><span class="k">\huge</span><span class="p">{</span><span class="k">\WhiteBishopOnWhite</span><span class="p">}}</span><span class="c">%白のコマの位置を揃える。上の駒の数に合わせる。</span>
+<span class="k">\normalsize</span><span class="p">{}</span><span class="c">%フォントを元に戻す</span>
+<span class="nt">\begin{enumerate*}</span>
+<span class="k">\item</span> <span class="k">\figsymbol</span><span class="p">{</span>K<span class="p">}</span>f1<span class="k">\item</span> <span class="k">\figsymbol</span><span class="p">{</span>K<span class="p">}</span>f8
+<span class="nt">\end{enumerate*}</span>
+</pre></div>
+</div>
+
+<p>これでこんな感じになる。<br>
+<a href="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2F686e076d-4495-1e26-fef5-aacde04c9e1a.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=e0d05c3c7911da565489e4edd538f902" target="_blank" rel="nofollow noopener"><img width="319" alt="chessboard" src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2F686e076d-4495-1e26-fef5-aacde04c9e1a.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=e0d05c3c7911da565489e4edd538f902" data-canonical-src="https://qiita-image-store.s3.amazonaws.com/0/44129/686e076d-4495-1e26-fef5-aacde04c9e1a.png" srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2F686e076d-4495-1e26-fef5-aacde04c9e1a.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=0b100fc5f3bd6aabbced53f90f78d2b4 1x" loading="lazy"></a></p>
+
+<p>棋譜の書き方は、enumitemパッケージを利用して横書きでナンバリングできるようにすると楽。棋譜中だと白黒を区別せずどちらも白を用いている。インクの節約だろうか。</p>

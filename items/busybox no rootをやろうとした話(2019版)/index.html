@@ -1,0 +1,33 @@
+
+<h1>
+<span id="busyboxとは" class="fragment"></span><a href="#busybox%E3%81%A8%E3%81%AF"><i class="fa fa-link"></i></a>Busyboxとは</h1>
+
+<p>Busyboxとは、いくつかのよく使うコマンドを一つのコマンドにまとめた便利つーる(スイスアーミーナイフ)です。これをAndroid Terminal Emulatorに久しぶりに入れてみようとした話です。</p>
+
+<h1>
+<span id="androidのセキュリティ" class="fragment"></span><a href="#android%E3%81%AE%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3"><i class="fa fa-link"></i></a>Androidのセキュリティ</h1>
+
+<p>AndroidはLinuxと違い、一般ストレージにおいたファイルに実行権限をつけたりすることはできません。（スクリプトなどは動かせますが。）<br>
+そのため、elfなファイルを動かしたい場合、いくつか制約があります。</p>
+
+<ol>
+<li>root権限や1000以下のポートを占拠することができない</li>
+<li>いくつかのディレクトリが読み取り専用</li>
+<li>フォルダ構造その他Androidはカスタムされているのでうまく動かない</li>
+</ol>
+
+<p>そのため、うまくコマンドを実行させるにはビルドから行って、さらに設定なども細かく変える必要があります。<br>
+Busyboxはそこまでは必要ありません。すでにバイナリが用意されているからです。<br>
+<a href="https://forum.xda-developers.com/showthread.php?t=1929852" class="autolink" rel="nofollow noopener" target="_blank">https://forum.xda-developers.com/showthread.php?t=1929852</a><br>
+ここからAndroid armv7l用のバイナリを入手できます。<br>
+これをAndroid Terminal Emulatorのデータ領域にコピーします。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nb">mkdir</span> /data/user/0/jackpal.androidterm/files
+<span class="nb">cp</span> /storage/emulated/0/Downloads/busybox /data/user/0/jackpal.androidterm/files
+<span class="nb">chmod</span> +x /data/user/0/jackpal.androidterm/files/busybox
+</pre></div></div>
+
+<p>他にないと思いますが、<code>uname -a</code>コマンドでデバイスのアーキテクチャを調べられます。<br>
+最後に環境変数PATHにこれを追加して、最初に実行するコマンドに入れれば終わりです。<br>
+<code>export PATH=$PATH:/data/user/0/jackpal.androidterm/files;clear</code><br>
+しかし、何かおかしいことにbusybox自体は成功するものの、busybox内の他のコマンドは呼び出そうとすると、　<code>Bad system call</code>と言われるので、うまくいきませんでした。</p>

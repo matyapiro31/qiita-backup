@@ -1,0 +1,153 @@
+
+<h1>
+<span id="インストール" class="fragment"></span><a href="#%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>インストール</h1>
+
+<p>通常の手順でインストールします。単体テストにはKarma+mochaを使います。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>npm i <span class="nt">-g</span> vue-cli
+vue init webpack vue-example
+<span class="nb">cd</span> ./vue-example
+git init 
+</pre></div></div>
+
+<h1>
+<span id="gitignoreの設定" class="fragment"></span><a href="#gitignore%E3%81%AE%E8%A8%AD%E5%AE%9A"><i class="fa fa-link"></i></a>.gitignoreの設定</h1>
+
+<p><code>node_modules/</code>と<code>dist/</code>がきちんと含まれていることを確認します。</p>
+
+<h1>
+<span id="パッケージインストール" class="fragment"></span><a href="#%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>パッケージインストール</h1>
+
+<p>yarnを使います。パッケージ数が多い上にサイズもそこそこあるのでかなり時間がかかります。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>yarn <span class="nb">install</span>
+</pre></div></div>
+
+<p>追加でこれらも入れておきます。</p>
+
+<ul>
+<li>sw-precache-webpack-plugin</li>
+<li>Vuetify</li>
+<li>gettext-parser</li>
+</ul>
+
+<h1>
+<span id="indexhtmlを設定する" class="fragment"></span><a href="#indexhtml%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>index.htmlを設定する</h1>
+
+<p>PWAとして使えるよう、metaタグなどを設定します。</p>
+
+<div class="code-frame" data-lang="diff">
+<div class="code-lang"><span class="bold">index.html</span></div>
+<div class="highlight"><pre>    &lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+      &lt;head&gt;
+        &lt;meta charset="utf-8"&gt;
+        &lt;meta name="viewport" content="width=device-width,initial-scale=1.0"&gt;
+<span class="gi">+       &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
++       &lt;link rel="icon" type="image/png" sizes="32x32" href="/static/img/icons/favicon-32x32.png"&gt;
++       &lt;link rel="icon" type="image/png" sizes="16x16" href="/static/img/icons/favicon-16x16.png"&gt;
++       &lt;!--[if IE]&gt;&lt;link rel="shortcut icon" href="/static/img/icons/favicon.ico"&gt;&lt;![endif]--&gt;
++       &lt;link rel="manifest" href="/static/manifest.json"&gt;
++       &lt;meta name="theme-color" content="aliceblue"&gt;
+</span>        &lt;title&gt;vue-example&lt;/title&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        &lt;div id="app"&gt;&lt;/div&gt;
+        &lt;!-- built files will be auto injected --&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+</pre></div>
+</div>
+
+<h1>
+<span id="ドキュメントのタイトルを設定できるようにする" class="fragment"></span><a href="#%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88%E3%81%AE%E3%82%BF%E3%82%A4%E3%83%88%E3%83%AB%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%A7%E3%81%8D%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>ドキュメントのタイトルを設定できるようにする</h1>
+
+<p><code>src/utils</code>ディレクトリを作成し、拡張用モジュールを作ります。</p>
+
+<div class="code-frame" data-lang="diff">
+<div class="code-lang"><span class="bold">src/main.js</span></div>
+<div class="highlight"><pre>    import Vue from 'vue'
+    import App from './App'
+    import router from './router'
+<span class="gi">+   import utils from './utils'
+</span></pre></div>
+</div>
+
+<p>ディレクトリ内にタイトル変更用のファイルを作り、読み込めるようにします。</p>
+
+<div class="code-frame" data-lang="javascript">
+<div class="code-lang"><span class="bold">src/utils/index.js</span></div>
+<div class="highlight"><pre><span class="k">import</span> <span class="nx">Vue</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">vue</span><span class="dl">'</span>
+<span class="k">import</span> <span class="nx">title</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./title</span><span class="dl">'</span>
+
+<span class="nx">Vue</span><span class="p">.</span><span class="nx">mixin</span><span class="p">(</span><span class="nx">title</span><span class="p">)</span>
+</pre></div>
+</div>
+
+<p><code>src/utils/title.js</code>を作成し、コンポーネントごとにタイトルを変更できるようにします。<br>
+サイト名は一段上のコンポーネントで統一できるようにします。</p>
+
+<div class="code-frame" data-lang="javascript"><div class="highlight"><pre><span class="k">export</span> <span class="k">default</span> <span class="p">{</span>
+  <span class="nx">created</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">$parent</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">site</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$parent</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">site</span>
+      <span class="kd">let</span> <span class="nx">title</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">$options</span><span class="p">.</span><span class="nx">title</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">site</span> <span class="o">&amp;&amp;</span> <span class="nx">title</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">title</span> <span class="o">=</span> <span class="s2">`</span><span class="p">${</span><span class="nx">site</span><span class="p">}</span><span class="s2"> - </span><span class="p">${</span><span class="nx">title</span><span class="p">}</span><span class="s2">`</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div></div>
+
+<h1>
+<span id="テストの設定" class="fragment"></span><a href="#%E3%83%86%E3%82%B9%E3%83%88%E3%81%AE%E8%A8%AD%E5%AE%9A"><i class="fa fa-link"></i></a>テストの設定</h1>
+
+<h2>
+<span id="1-staticに置いたファイルを認識しない" class="fragment"></span><a href="#1-static%E3%81%AB%E7%BD%AE%E3%81%84%E3%81%9F%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E8%AA%8D%E8%AD%98%E3%81%97%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>1. <code>static/</code>に置いたファイルを認識しない</h2>
+
+<p>これはKarmaになぜか設定がないだけなのでプロキシを設定します。</p>
+
+<div class="code-frame" data-lang="diff">
+<div class="code-lang"><span class="bold">test/unit/karma.conf.js</span></div>
+<div class="highlight"><pre>     preprocessors: {
+       './index.js': ['webpack', 'sourcemap']
+     },
+<span class="gi">+    proxies: {
++      '/static/': '../../static/'
++    },
+</span>     webpack: webpackConfig,
+     webpackMiddleware: {
+       noInfo: true
+
+</pre></div>
+</div>
+
+<h2>
+<span id="2-router-linkを書くとエラーが出る" class="fragment"></span><a href="#2-router-link%E3%82%92%E6%9B%B8%E3%81%8F%E3%81%A8%E3%82%A8%E3%83%A9%E3%83%BC%E3%81%8C%E5%87%BA%E3%82%8B"><i class="fa fa-link"></i></a>2. router-linkを書くとエラーが出る</h2>
+
+<p>テストでrouterをimportしていないのが原因です。デフォルトのテストの例の場合は、以下のように付け加えます。</p>
+
+<div class="code-frame" data-lang="diff">
+<div class="code-lang"><span class="bold">test/unit/specs/HelloWorld.spec.js</span></div>
+<div class="highlight"><pre>    import Vue from 'vue'
+    import HelloWorld from '@/components/HelloWorld'
+<span class="gi">+   import router from '@/router'
+</span>
+    describe('HelloWorld.vue', () =&gt; {
+      it('should render correct contents', () =&gt; {
+        const Constructor = Vue.extend(HelloWorld)
+<span class="gd">-       const vm = new Constructor().$mount()
+</span><span class="gi">+       const vm = new Constructor({router}).$mount()
+</span>        expect(vm.$el.querySelector('.hello h1').textContent)
+        .to.equal('Welcome to Your Vue.js App')
+      })
+    })
+</pre></div>
+</div>
+
+<h1>
+<span id="参考ページ" class="fragment"></span><a href="#%E5%8F%82%E8%80%83%E3%83%9A%E3%83%BC%E3%82%B8"><i class="fa fa-link"></i></a>参考ページ</h1>
+
+<p><a href="https://github.com/vuejs-templates/webpack/issues/709" class="autolink" rel="nofollow noopener" target="_blank">https://github.com/vuejs-templates/webpack/issues/709</a><br>
+<a href="https://stackoverflow.com/questions/21067710/how-to-fix-404-warnings-for-images-during-karma-unit-testing" class="autolink" rel="nofollow noopener" target="_blank">https://stackoverflow.com/questions/21067710/how-to-fix-404-warnings-for-images-during-karma-unit-testing</a></p>

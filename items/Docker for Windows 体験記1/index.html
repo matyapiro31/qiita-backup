@@ -1,0 +1,36 @@
+<p>DockerをLinuxのほうで十分使ってみたのでWindowsでも使ってみた｡というか使わざるを得ない状況になった｡<br>
+バグを呼び寄せる人間である私が使うとやっぱりDockerもバグが起こった｡(ほとんど自分が悪い｡)</p>
+
+<h1>
+<span id="boot2dockerが起動しない" class="fragment"></span><a href="#boot2docker%E3%81%8C%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>Boot2Dockerが起動しない</h1>
+
+<p><code>boot2docker start</code>としてもexitコードを吐いて終了するだけ｡<code>boot2docker -v start</code>でようやく全貌を知り､ググる｡<br>
+原因はどうやらVirtualBox｡</p>
+
+<h1>
+<span id="バグ1-virtualboxが起動できない" class="fragment"></span><a href="#%E3%83%90%E3%82%B01-virtualbox%E3%81%8C%E8%B5%B7%E5%8B%95%E3%81%A7%E3%81%8D%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>バグ1 VirtualBoxが起動できない</h1>
+
+<p>VirtualBoxがさっぱり起動できず､Ubuntuを試しに立ち上げればこれも動かない｡エラーコードからUltra UX Theme Patcherが原因だとわかる｡<br>
+使ってないのでアンインストールし､めでたく起動できるようになった｡</p>
+
+<h1>
+<span id="バグというか自分の問題" class="fragment"></span><a href="#%E3%83%90%E3%82%B0%E3%81%A8%E3%81%84%E3%81%86%E3%81%8B%E8%87%AA%E5%88%86%E3%81%AE%E5%95%8F%E9%A1%8C"><i class="fa fa-link"></i></a>バグというか自分の問題</h1>
+
+<p>CygwinのsshでDockerに入ろうとしたものの､パスワードが分からない｡よくよく考えたら公開鍵使えるのだが､とにかくパスワードを調べまくる｡<br>
+ちなみに<strong>tcuser</strong>がパスワード｡それでもだめならVirtualBoxから起動してしまえばいい｡</p>
+
+<h1>
+<span id="virtualboxの共有フォルダの設定に驚く" class="fragment"></span><a href="#virtualbox%E3%81%AE%E5%85%B1%E6%9C%89%E3%83%95%E3%82%A9%E3%83%AB%E3%83%80%E3%81%AE%E8%A8%AD%E5%AE%9A%E3%81%AB%E9%A9%9A%E3%81%8F"><i class="fa fa-link"></i></a>VirtualBoxの共有フォルダの設定に驚く</h1>
+
+<p>なんで共有フォルダがC:\Usersなのか｡管理者がboot2dockerを実行した場合､他のユーザが見えてしまう｡<br>
+なぜデフォルトがC:\Usersなのか不明｡C:\Users\%USERNAME%でいいのでは?<br>
+これはC:\にするのと大して変わらない｡Windowsのプログラムは起動できないため｡</p>
+
+<h1>
+<span id="考察" class="fragment"></span><a href="#%E8%80%83%E5%AF%9F"><i class="fa fa-link"></i></a>考察</h1>
+
+<p>Docker for Windowsの安全性は<br>
+1. コンテナの壁 - kernelを共有しているというから､破れないものではないと思う｡むしろ新しい技術であるから色々と未熟だ｡ファイルコピー時とか狙われそう｡<br>
+2. VirtualBoxの壁 - 本来なら一番高い壁だが共有フォルダがデフォルトであるから既に破れている｡<br>
+3. Windows管理者権限の壁 - これはさすがにコンテナの壁の中からは実行させるのは難しい｡ように思えるが2.のせいでそうでもない｡<br>
+というわけであまり安全じゃない気がしてきました｡</p>

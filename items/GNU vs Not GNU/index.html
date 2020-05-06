@@ -1,0 +1,13 @@
+
+<h1>
+<span id="コマンドの互換性の話" class="fragment"></span><a href="#%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E4%BA%92%E6%8F%9B%E6%80%A7%E3%81%AE%E8%A9%B1"><i class="fa fa-link"></i></a>コマンドの互換性の話</h1>
+
+<p>大抵のLinuxはGNUのコマンドを前提にしているので、拡張されたコマンドオプションを利用してもあんまり意識しませんが、<br>
+AndroidはGPLの利用をカーネルレベルに抑えているので、例えば<code>ls -1</code>とかが効かなかったりします。<br>
+N PreviewやMashmallowだと使えたりした(逆に指定しないと一行につき一つの表示にならない。)ので、lsとか組み込みで入っているコマンドでもなるべくbusyboxのコマンドを使うべきだという結論です。</p>
+
+<h1>
+<span id="sedの話" class="fragment"></span><a href="#sed%E3%81%AE%E8%A9%B1"><i class="fa fa-link"></i></a>sedの話</h1>
+
+<p>GNUのsedだと\xXXで16進数を使って任意の文字に置換できますが、busyboxでも組み込みでも出来なかったりします。<br>
+これはどうしようもないことだと思います。</p>

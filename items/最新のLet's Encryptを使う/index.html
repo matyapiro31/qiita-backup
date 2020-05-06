@@ -1,0 +1,149 @@
+
+<h1>
+<span id="lets-encryptとは" class="fragment"></span><a href="#lets-encrypt%E3%81%A8%E3%81%AF"><i class="fa fa-link"></i></a>Let's Encryptとは</h1>
+
+<p>誰もが無料で簡単にサーバ証明書を手に入れ､設定できるようにしようというコンセプトのプロジェクトです｡<br>
+Public Betaが終了し､今年4月に正式にサービスが開始されました｡<br>
+自動設定をしてくれるクライアントがあり､様々なWebサーバに対応しています｡<br>
+正式リリースに伴い､クライアント名も<code>certbot</code>という名前に変わりました｡<br>
+今回はApache2 + Ubuntu 14.04(Raspberry Pi)でやってみました｡</p>
+
+<h1>
+<span id="導入" class="fragment"></span><a href="#%E5%B0%8E%E5%85%A5"><i class="fa fa-link"></i></a>導入</h1>
+
+<p>certbotの導入には<code>git</code>を使えと書いてあるサイトもありますが､やめておいたほうがいいです｡特にUbuntuやDebianだと<code>git</code>のインストールは大量の依存関係を引っ張ってくるので､サーバに負担がかかります｡<br>
+ここはシンプルにcertbotのgithubリポジトリ(<a href="https://github.com/certbot/certbot)%E3%81%8B%E3%82%89wget%E3%81%AA%E3%81%A9%E3%81%A7%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%81%99%E3%82%8B%E3%81%AE%E3%81%8C%E7%84%A1%E9%9B%A3%E3%81%A7%E3%81%99%EF%BD%A1" class="autolink" rel="nofollow noopener" target="_blank">https://github.com/certbot/certbot)からwgetなどでダウンロードするのが無難です｡</a><br>
+必要なのは<strong>certbot-auto</strong>というスクリプトだけなので､<br>
+<code>wget https://raw.githubusercontent.com/certbot/certbot/master/certbot-auto</code><br>
+さらにダウンロードしたファイルに実行権限を付けます｡<br>
+<code>chmod +x ./certbot-auto</code><br>
+実行｡ルート権限を使用する必要があります｡<br>
+(2016年9月3日追記: -d オプションを使用することによって複数ドメインに対応することができます。ただし、ワイルドカードドメインは今の所対応していません。)<br>
+<code>sudo ./certbot-auto --apache</code><br>
+実行すると<strong><code>Installing Python packages...</code></strong>というメッセージが出てしばらく止まりますが､pipでpythonのパッケージをインストールしているだけなので､問題無いです｡<br>
+こんな画面が出るので､<strong>Yes</strong></p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   | No names were found in your configuration files.                     |
+   | You should specify ServerNames in your config files in order to      |
+   | allow for accurate installation of your certificate.                 |
+   | If you do use the default vhost, you may specify the name manually.  |
+   | Would you like to continue?                                          |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   |                     &lt; Yes &gt;           &lt; No  &gt;                        |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+</pre></div></div>
+
+<p>さらにドメイン名を入力｡</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   | Please enter in your domain name(s) (comma and/or space separated)   |
+   | +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+ |
+   | |example.com                                                       | |
+   | +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+ |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   |                     &lt;  OK  &gt;           &lt;Cancel&gt;                      |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+</pre></div></div>
+
+<p>既にドメイン名を設定していた場合､上のメッセージが飛んでこのメッセージが出る｡</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   | Which names would you like to activate HTTPS for?                    |
+   | +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+ |
+   | |                     [*] www.example.com                          | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+ |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   |                                                                      |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   |                     &lt;  OK  &gt;           &lt;Cancel&gt;                      |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+</pre></div></div>
+
+<p>常にSSL/TLSを使うか､通常のHTTPも使えるようにするか選択する｡</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   | Please choose whether HTTPS access is required or optional.          |
+   | +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+ |
+   | |    Easy    Allow both HTTP and HTTPS access to these sites       | |
+   | |    Secure  Make all requests redirect to secure HTTPS access     | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | |                                                                  | |
+   | +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+ |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   |                     &lt;  OK  &gt;           &lt;Cancel&gt;                      |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+</pre></div></div>
+
+<p>成功するとこのメッセージが表示されます｡</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   | Congratulations! You have successfully enabled                       |
+   | https://www.example.com                                              |
+   |                                                                      |
+   | You should test your configuration at:                               |
+   | https://www.ssllabs.com/ssltest/analyze.html?d=www.example.com       |
+   |                                                                      |
+   |                                                                      |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+   |                               &lt;  OK  &gt;                               |
+   +――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――+
+</pre></div></div>
+
+<p>最期に<code>Your cert will expire on YEAR-MONTH-DATE.</code>という文でいつ証明書の有効期限が切れるのか教えてくれるので､メモしておこう｡</p>
+
+<h1>
+<span id="証明書の更新" class="fragment"></span><a href="#%E8%A8%BC%E6%98%8E%E6%9B%B8%E3%81%AE%E6%9B%B4%E6%96%B0"><i class="fa fa-link"></i></a>証明書の更新</h1>
+
+<p>更新だけであればこのコマンドを使う｡</p>
+
+<p><code>./certbot-auto --apache certonly</code></p>
+
+<h2>
+<span id="追記" class="fragment"></span><a href="#%E8%BF%BD%E8%A8%98"><i class="fa fa-link"></i></a>追記</h2>
+
+<p>上の手順ではダメだったので、一からインストールし直し、設定を再インストールしたうえで、<br>
+<code>sudo service apache2 reload</code><br>
+<code>sudo systemctl daemon-reload</code><br>
+<code>sudo service apache2 restart</code><br>
+を実行する。</p>
+
+<h1>
+<span id="アンインストール" class="fragment"></span><a href="#%E3%82%A2%E3%83%B3%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>アンインストール</h1>
+
+<p>このプログラムは<code>~/.local/share/letsencrypt</code>にPythonのモジュールをインストールするのでこれも削除したほうがいいでしょう｡</p>
+
+<h1>
+<span id="補足" class="fragment"></span><a href="#%E8%A3%9C%E8%B6%B3"><i class="fa fa-link"></i></a>補足</h1>
+
+<p>2016年8月27日の時点での情報です｡多分すぐに色々変わると思うので､最新の情報はLet's EncryptのWebサイトにて確認してください｡</p>

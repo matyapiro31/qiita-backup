@@ -1,0 +1,23 @@
+
+<h1>
+<span id="途中まで背景を塗りたい" class="fragment"></span><a href="#%E9%80%94%E4%B8%AD%E3%81%BE%E3%81%A7%E8%83%8C%E6%99%AF%E3%82%92%E5%A1%97%E3%82%8A%E3%81%9F%E3%81%84"><i class="fa fa-link"></i></a>途中まで背景を塗りたい</h1>
+
+<p>背景の色を決める時には<code>background-color</code>を使うことが多いですが、要素の一部分のみに色を塗りたい時はありませんか?<br>
+まあ<code>box-shadow</code>を使えば全て解決なんですが、別の解決方法を考えました。</p>
+
+<h2>
+<span id="background-imageとlinear-gradientを使う" class="fragment"></span><a href="#background-image%E3%81%A8linear-gradient%E3%82%92%E4%BD%BF%E3%81%86"><i class="fa fa-link"></i></a><code>background-image</code>と<code>linear-gradient</code>を使う</h2>
+
+<p>という解決方法です。ちなみにTwitterの投票の棒グラフでは2つの要素を重ねあわせて無理やり実現しています。<br>
+PureCSSで解決できないなんてCSS使いの風上にもおけない。<br>
+<code>linear-gradient</code>は複数の色を合わせてグラデーションを作り出す要素ですが、画像扱いなので<code>background-color</code>ではなく、<code>background-image</code>に指定します。<code>background-image</code>は縦横のサイズが決まっています。そのため、<code>background-position</code>を使えば部分的に色を塗ることができます。<br>
+<code>background</code>要素は複数の背景を設定できるので、これを使えば理論上ドット絵を描くことも可能なはずです。</p>
+
+<p>例： 幅500pxの要素に対して2:3に塗り分ける方法。</p>
+
+<div class="code-frame" data-lang="css"><div class="highlight"><pre><span class="nt">background</span><span class="o">:</span> <span class="nt">linear-gradient</span><span class="o">(</span><span class="nf">#1f2</span><span class="o">,</span><span class="nf">#1f2</span><span class="o">)</span> <span class="nt">-300px</span> <span class="nt">center</span> <span class="nt">no-repeat</span><span class="o">,</span>
+            <span class="nt">linear-gradient</span><span class="o">(</span><span class="nf">#ada</span><span class="o">,</span><span class="nf">#ada</span><span class="o">)</span> <span class="nt">right</span> <span class="nt">center</span> <span class="nt">no-repeat</span><span class="o">;</span>
+</pre></div></div>
+
+<p>jsfiddleにサンプルを置いています。<br>
+<a href="https://jsfiddle.net/matyapiro31/ts53cfcq/4/" class="autolink" rel="nofollow noopener" target="_blank">https://jsfiddle.net/matyapiro31/ts53cfcq/4/</a></p>

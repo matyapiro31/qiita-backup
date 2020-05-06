@@ -1,0 +1,23 @@
+
+<h1>
+<span id="gitにはファイルの新規作成追加がない" class="fragment"></span><a href="#git%E3%81%AB%E3%81%AF%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E6%96%B0%E8%A6%8F%E4%BD%9C%E6%88%90%E8%BF%BD%E5%8A%A0%E3%81%8C%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>Gitにはファイルの新規作成&amp;追加がない?</h1>
+
+<p>どうにもこれ↘を一発でやるコマンドがなかったようなので、aliasを設定しておこうというわけです。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">touch </span>README.md
+<span class="nv">$ </span>git add README.md
+<span class="c"># ないのでaliasしようとしたけど、2つ要るので関数</span>
+<span class="k">function </span>git-add-new <span class="o">()</span> <span class="o">{</span>
+    <span class="nb">touch</span> <span class="nv">$1</span>
+    git add <span class="nv">$1</span>
+<span class="o">}</span>
+</pre></div></div>
+
+<p>これだけだと味気ないので、第二引数に権限を設定する機能を付けましょう。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="k">function </span>git-add-new2 <span class="o">()</span> <span class="o">{</span>
+    <span class="nb">touch</span> <span class="nv">$1</span>
+    <span class="nb">chmod</span> <span class="k">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">660</span><span class="k">}</span> <span class="nv">$1</span>
+    git add <span class="nv">$1</span>
+<span class="o">}</span>
+</pre></div></div>

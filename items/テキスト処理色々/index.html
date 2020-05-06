@@ -1,0 +1,27 @@
+
+<h1>
+<span id="テキストファイルの加工" class="fragment"></span><a href="#%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AE%E5%8A%A0%E5%B7%A5"><i class="fa fa-link"></i></a>テキストファイルの加工</h1>
+
+<p>テキストファイルに対してやりたい操作は色々あります。例えば、<br>
+1. 改行を消したい<br>
+2. タブや無駄なスペースを消したい<br>
+3. 行を跨いで置換したい<br>
+などです。</p>
+
+<p>echoコマンドで変数を出力する際、変数を""か''で囲まないと改行は消えます。<br>
+そのため</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">a</span><span class="o">=</span><span class="sb">`</span><span class="nb">cat </span>file<span class="sb">`</span><span class="o">&amp;&amp;</span><span class="nb">echo</span> <span class="nv">$a</span>
+</pre></div></div>
+
+<p>と入れてみると改行が出力されないですね。</p>
+
+<p>無駄に幾つもスペースが入っているようなファイルがあったときにはtrコマンドが便利です。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nb">cat </span>file|tr <span class="nt">-s</span> <span class="s2">" "</span>
+</pre></div></div>
+
+<p>行を跨ぐとsedはあんまり使えません。awkを使いましょう。</p>
+
+<div class="code-frame" data-lang="awk"><div class="highlight"><pre><span class="nx">awk</span> <span class="o">-</span><span class="nx">F</span><span class="err">'</span><span class="nx">before</span><span class="err">\</span><span class="nx">nprevious</span><span class="err">\</span><span class="nx">anti</span><span class="err">'</span> <span class="o">-</span><span class="nx">v</span> <span class="kc">ORS</span><span class="o">=</span><span class="err">'</span><span class="nx">after</span><span class="err">\</span><span class="nx">nnext</span><span class="err">\</span><span class="nx">npost</span><span class="err">'</span>  <span class="err">'</span><span class="p">{</span><span class="k">print</span><span class="p">}</span><span class="err">'</span>  <span class="nx">filename</span>
+</pre></div></div>

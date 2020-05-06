@@ -1,0 +1,30 @@
+<ol>
+<li>Releaseビルドでエラーになる場合はPublish Android App...からキーを生成する</li>
+<li>x86ビルドでエラーになるときはプロジェクトのプロパティからAndroid Options-&gt;Advancedでx86にチェックを入れる</li>
+<li>msbuildでビルドする。例 Rebuild Debug Any CPU: <code>msbuild</code><em><code>solution.sln</code></em><code>/t:Rebuild /p:Configuration=Debug /p:Platform="Any CPU"</code> ちなみに2秒ほど早い。インストールは<a href="http://developer.xamarin.com/guides/android/under_the_hood/build_process/" rel="nofollow noopener" target="_blank">Xamarin Build Process Android</a>を参考に。</li>
+<li>msbuildのパスを環境変数Pathに加えておくとパッケージマネージャコンソールからビルドできる こちらではソリューションファイル名を指定する必要が（なぜか）必要ない </li>
+<li><p>インストールは<code>cd</code>できないので、どうやらソリューションのディレクトリらしいのでそこから相対パスで<br>
+<code>msbuild /t:Install</code><em><code>ProjectName\ProjectName.csproj</code></em><code>/p:AdbTarget="-s</code><em><code>your_device_id</code></em><code>"</code><br>
+参考：<a href="http://developer.xamarin.com/guides/android/under_the_hood/build_process/#22-build-targets" class="autolink" rel="nofollow noopener" target="_blank">http://developer.xamarin.com/guides/android/under_the_hood/build_process/#22-build-targets</a><br>
+AdbTargetの値はadbコマンドと同じだが、なぜか<code>-e</code>は効かなかった <code>-s</code>の場合は全体を""で括る必要がある</p></li>
+<li><p>APKファイルに署名するには<br>
+<code>msbuild /p:Configuration=Release /t:SignAndroidPackage</code><em><code>ProjectName\ProjectName.csproj</code></em><br>
+とすればよい。</p></li>
+<li>
+<p>jarsignerがどうもおかしいので調べてみたら</p>
+
+<blockquote>
+<p>警告:<br>
+-tsaまたは-tsacertが指定されていないため、このjarにはタイムスタンプが付加されていません。タイムスタンプがないと、署名者証明書の有効期限(2045-0X-XX)後または将来の失効日後に、ユーザーはこのjarを検証できない可能性があります。</p>
+</blockquote>
+</li>
+</ol>
+
+<p>と言われているらしい jarsignerのコマンドを直接変更できないので<code>doskey</code>コマンドでaliasしよう、と思ったが標準コマンド以外はどういう書式になるのかわからないので放置、というか証明書は40年も持つので問題ない<br>
+8. 国際化(i18n)<br>
+どうも標準ではShift_JISとかがサポートされないので、<br>
+ビルドオプションに<code>/p: MandroidI18n=All</code>を入れれば標準のUTF-8以外が入る。<br>
+9．プラットフォーム<br>
+Android向けのくせにCPU依存になってしまう。まあ旧Dalvik/ARTのC#版が一緒に入れないといけないからだが、全プラットフォーム対応にするとこれは容量が大きくなるという諸刃の剣になる。それぞれのプラットフォーム向けに複数作るのはいちいち手動でやらないとならない。<br>
+設定オプションは<code>/:AndroidSupportedAbis=armeabi;x86</code>とかでできる。<br>
+実際Mono　VMはAndroidのDalvik/ARTのAPIを無視して最新APIを使えるらしいので(未確認)、メガ単位ぐらいは問題にはならないが。</p>

@@ -1,0 +1,7 @@
+Xamarin Evolve 2016にて。タッチ入力などもできることがデモで分かった。
+Xamarin.FormsのXamlでのPreviewができるようになった。Xamarin.Forms Previewr(仮)という名前らしい。
+極めてシンプルでスムーズに行えるみたいだ。
+C#の対話式のインターフェイスであるXamarin Workbooks。入力補完もできる。さらにAPIのリファレンスを参照して記述することもできる。C#のリファレンスをマークダウンで記述し、CSSなども使えることがわかった。
+Node.jsもできるようだ。こちらはサーバーの記述をMarkdownの中に書いて即時実行できるようだ。
+Xamarin.Forms用のDark Themeなどのテーマ機能 Xamarin.Forms Theme
+Visual Studioで動作を記録してC#のテストコードを生成できる機能も出てきた。

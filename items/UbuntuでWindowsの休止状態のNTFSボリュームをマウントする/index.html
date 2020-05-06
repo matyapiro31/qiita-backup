@@ -1,0 +1,11 @@
+<p>UbuntuでWindowsのボリュームを開きたくても、休止状態だとそれができません。この解決策は2つあります。<br>
+1. Windowsを起動し、正常終了する。<br>
+この場合、Windows 8からは管理者権限で電源の設定を変更する必要がでてきました。Linux側からはどうにもできません。<br>
+2. これから書く方法で休止状態を解除する <br>
+ 読み込み専用でマウントするには<br>
+<code>sudo mount -t ntfs-3g -o ro</code><em><code>/dev/sdb2</code></em><em><code>/mnt</code></em><br>
+(/dev/sdb2,/mntはそれぞれ該当するデバイスファイル、ディレクトリを割り当ててください。)<br>
+また、休止状態を解除して書き込めるようにするには、<br>
+<code>sudo mount -t ntfs-3g -o remove_hiberfile</code><em><code>/dev/sdb2</code></em><em><code>/mnt</code></em><br>
+これによりhiberfil.sysが削除され、書き込みができるようにマウントできます。<br>
+ただし、休止状態が解除されてセッションが失われるので、注意してください。</p>

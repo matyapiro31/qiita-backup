@@ -1,0 +1,21 @@
+
+<h1>
+<span id="xquartzについて" class="fragment"></span><a href="#xquartz%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6"><i class="fa fa-link"></i></a>XQuartzについて</h1>
+
+<p>Mac OS Xにかつて付属していたソフトウェア。2016年で更新が終わっています。<br>
+現在のMojaveにはプリインストールされていないため、<br>
+MacでX Window Systemで動くGUIソフトウェアを動かすのに必要だったので導入してみました。<br>
+homebrewを使ってインストールすると簡単です。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>brew update
+brew cask install xquartz
+</pre></div></div>
+
+<p>一応書いておくと、パスワードが要求されます。<br>
+このままだと再起動するまで<code>DISPLAY</code>変数がセットされていないのでソフトウェアの起動がうまくいかないので、</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>sudo launchctl load -w /Library/LaunchAgents/org.macosforge.xquartz.startx.plist
+</pre></div></div>
+
+<p>で設定を読み込ませます。<br>
+再起動した後はこれは必要ありません。</p>

@@ -1,0 +1,15 @@
+<p>Windowsはそのままでは兎角セキュリティが心配な欠陥OSですが、このまえ<a href="gigazine.net">Gigazine</a>に載っていた方法で簡単に<br>
+乗っ取られます。これを防ぐ手立てはあるのでしょうか。<br>
+1. BitLockerで暗号化する<br>
+BitLockerはWindows XP,Vistaでは利用できません。しかし、7,8/8.1 10ではこの方法で十分防げるでしょう。<br>
+しかし、BitLockerもパスワードや鍵さえあれば十分Linuxなどでマウントできてしまいます。<br>
+これだけでは普段そのマシンを一般ユーザ権限で利用している人には通用しません。<br>
+其の場合はさらに2です。<br>
+2. BIOS/UEFIにパスワードを掛けたマシンからのみアクセスできるようにすれば、CD/USBでLinuxなどから起動されることは失くなります。<br>
+そしてスタートアップ修復を無効化しましょう。<br>
+管理者権限のコマンドプロンプトで<br>
+<code>bcdedit /set {current} recoveryenabled No</code><br>
+<code>bcdedit /deletevalue {current} recoverysequence</code><br>
+と実行してください。<br>
+ただしBIOS/UEFI/Windows/BitLockerのパスワードをすべて忘れると回復不能になるのでご注意を。<br>
+参照 スタートアップ修復の無効化について - Microsoft TechNet Blog <a href="http://blogs.technet.com/b/askcorejp/archive/2013/06/07/3577292.aspx" class="autolink" rel="nofollow noopener" target="_blank">http://blogs.technet.com/b/askcorejp/archive/2013/06/07/3577292.aspx</a></p>

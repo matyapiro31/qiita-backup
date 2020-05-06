@@ -1,0 +1,47 @@
+
+<h1>
+<span id="これを書いた理由" class="fragment"></span><a href="#%E3%81%93%E3%82%8C%E3%82%92%E6%9B%B8%E3%81%84%E3%81%9F%E7%90%86%E7%94%B1"><i class="fa fa-link"></i></a>これを書いた理由</h1>
+
+<p>Dockerに初期から存在するセキュリティ上の問題点を未だに理解せずにQiitaにDocker記事を書いている人が後を立たないので一応日本での第一報告者として解説しなくてはと思いました。</p>
+
+<h1>
+<span id="dockerはなぜrootでなければ動かないのか" class="fragment"></span><a href="#docker%E3%81%AF%E3%81%AA%E3%81%9Croot%E3%81%A7%E3%81%AA%E3%81%91%E3%82%8C%E3%81%B0%E5%8B%95%E3%81%8B%E3%81%AA%E3%81%84%E3%81%AE%E3%81%8B"><i class="fa fa-link"></i></a>Dockerはなぜrootでなければ動かないのか?</h1>
+
+<p>Dockerはroot権限で動いているデーモン(dockerd)とunixソケットまたはtcp/ipで通信していますが、dockerdにアクセスするにはdockerグループに所属しているかroot権限が必要になってきます。そしてdockerはroot無しでアクセスすると簡単に権限昇格ができてしまうのです。</p>
+
+<h1>
+<span id="dockerで権限昇格する" class="fragment"></span><a href="#docker%E3%81%A7%E6%A8%A9%E9%99%90%E6%98%87%E6%A0%BC%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>Dockerで権限昇格する</h1>
+
+<p>試しにユーザーをdockerグループに所属させてみましょう。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>sudo usermod -aG docker $USER
+</pre></div></div>
+
+<p>すると簡単にパスワードなしでdockerコマンドを使うことができるようになります。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre> docker images
+</pre></div></div>
+
+<p>しかしそうするとこういうことができてしまいます。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>touch backdoor.sh #悪いことをするスクリプト
+docker run -v /tmp:/mnt -it ubuntu:latest バックドアを設置するコマンド
+</pre></div></div>
+
+<p>このコマンドはコンテナ内のroot権限だけでなく、ホスト側のroot権限も与えてしまうので簡単にバックドアを設置できてしまうのです。(設置するコマンドは調べればすぐに出てきますが流石にコピペできるように書くのはやばいので)<br>
+また他にもコンテナを<code>--privileged</code>付きで起動しホストの<code>/</code>をマウントしてchrootするというもっと凶悪な手もあります。</p>
+
+<h1>
+<span id="元々sudoが使えるのに何が問題なの" class="fragment"></span><a href="#%E5%85%83%E3%80%85sudo%E3%81%8C%E4%BD%BF%E3%81%88%E3%82%8B%E3%81%AE%E3%81%AB%E4%BD%95%E3%81%8C%E5%95%8F%E9%A1%8C%E3%81%AA%E3%81%AE"><i class="fa fa-link"></i></a>元々sudoが使えるのに、何が問題なの?</h1>
+
+<p>問題はユーザーが意図的にdockerコマンドを実行した時には発生しません。問題は悪意のあるプログラムがサーバなどに混入した時や、怪しいDockerfileを使用した場合です。<br>
+大抵の悪意のあるプログラムは何らかの手段でroot権限を取得しようとしますが、それはゼロデイ脆弱性であったりそもそもの権限のミスであったりしますが、dockerがインストールされている条件下ならばこの方法で権限昇格を狙ってくる場合があるのです。また職場のPCだとかで目を離した隙に誰かがこっそり何かをし込んだりする可能性や、SSHの公開鍵が漏洩した場合なども十分に考えられます。</p>
+
+<h1>
+<span id="ではどうすればいいのか" class="fragment"></span><a href="#%E3%81%A7%E3%81%AF%E3%81%A9%E3%81%86%E3%81%99%E3%82%8C%E3%81%B0%E3%81%84%E3%81%84%E3%81%AE%E3%81%8B"><i class="fa fa-link"></i></a>ではどうすればいいのか?</h1>
+
+<p>毎回sudoするのはあまり得策ではありませんし、<code>su</code>や<code>sudo -i</code>で全部のコマンドをrootで動かすのは逆効果かつ自爆行為にもほどがあります。<br>
+この問題は2つの対応手段があります。<br>
+1つ目はnewgrpコマンドを使った一時的なdockerグループへの所属です。<br>
+2つ目はユーザー名前空間(<code>--userns-remap</code>)を用いたuidの変更です。これはdockerdの設定で変更可能ですが、<code>--privileged</code>を付けて実行できなくなります。<code>--privileged</code>を使う時は設定を変えてdockerdを再起動するか、別のデーモンプロセスを起動する必要があります。しかし、安全に利用できるため、普段からこちらで利用する方がいいのかもしれません。<br>
+この2つの解説は長くなるのでしませんが、両方を組み合わせるのが得策だと思います。<code>--privileged</code>を使わなければならない場合は素直にsudoをつけた方がいいと思います｡</p>

@@ -1,0 +1,53 @@
+
+<h1>
+<span id="タイムマシンの原理" class="fragment"></span><a href="#%E3%82%BF%E3%82%A4%E3%83%A0%E3%83%9E%E3%82%B7%E3%83%B3%E3%81%AE%E5%8E%9F%E7%90%86"><i class="fa fa-link"></i></a>タイムマシンの原理</h1>
+
+<p>タイムマシンはありえない､とかよく言われる。<br>
+しかし、チューニングテストに通るコンピュータがなくても問題がなく、ナビエ・ストークス方程式やエルゴード仮設などは証明しなくてもうまく行くように、タイムマシンパラドックスなど解決する必要がない。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>
+        ↷    ↷
+     ◯    ◯   ◯
+    過去  現在  未来
+    HEAD^ HEAD  ^HEAD   
+</pre></div></div>
+
+<p>この図の一番下がgitである。<br>
+現在の物理学でも未来に行くのはちょっとブラックホール周辺を回ってるだけでいいので、実現可能である。(現実的ではないのは一旦置いておこう。)</p>
+
+<h1>
+<span id="gitのcommitの操作" class="fragment"></span><a href="#git%E3%81%AEcommit%E3%81%AE%E6%93%8D%E4%BD%9C"><i class="fa fa-link"></i></a>gitのcommitの操作</h1>
+
+<p>問題は過去に行くことである。gitでは容易く過去のリビジョンに戻すことが出来る。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>git reset <span class="nt">--hard</span> HEAD^
+</pre></div></div>
+
+<p>しかし現実ではエントロピー増大に阻まれてそのようなことはできない。<br>
+しかし部分的に見ればエントロピーが減少するようにすることは可能である。<br>
+gitの仕組みを説明しよう。gitはリビジョンというもので変更内容の差分を保存しているのでその差分を逆に適用しているだけで、現実には次のリビジョンに行っているようなものである。(パラメータなども元に戻るが、<code>git reflog</code>で現在に戻すことも可能。)</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>
+<span class="nb">touch </span>test.txt
+<span class="c">#初期化してファイルを追加</span>
+git init&amp;&amp;git add test.txt
+<span class="c">#第一の状態</span>
+git commit <span class="nt">-a</span>
+<span class="c">#ファイルを編集</span>
+vim test.txt
+<span class="c">#第二の状態</span>
+git commit <span class="nt">-a</span>
+<span class="c">#コミットを最初に戻す</span>
+git reset <span class="nt">--hard</span> HEAD^
+<span class="c">#変更をRedo</span>
+git reset <span class="nt">--hard</span> HEAD@<span class="o">{</span>1<span class="o">}</span>
+</pre></div></div>
+
+<p>ただ、現実は不確定性原理より、</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre>ΔxΔp~h (hはプランク定数)
+</pre></div></div>
+
+<p>なので、うまく差分データを取ることはできない。しかしまあ現実では無理でも、SFならばそれが出来ると思う。<br>
+過去の地球の状態を保存し、resetするのであれば、同じ状態を複製するだけなので自分を殺しても何の問題もない。<br>
+まあタイムパラドックスのないタイムトラベルものなんて面白くないが。</p>

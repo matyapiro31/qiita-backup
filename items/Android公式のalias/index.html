@@ -1,0 +1,23 @@
+<p>Androidのmkshをbashで置き換えてみた結果、互換性のためこれらをbashに移しました。<br>
+#の付いているのがbashでは不要な別名です。</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">alias</span></div>
+<div class="highlight"><pre><span class="nv">autoload</span><span class="o">=</span><span class="s1">'typeset -fu'</span>
+<span class="nv">functions</span><span class="o">=</span><span class="s1">'typeset -f'</span>
+<span class="nb">hash</span><span class="o">=</span><span class="s1">'alias -t'</span> <span class="c">#</span>
+<span class="nb">history</span><span class="o">=</span><span class="s1">'fc -l'</span><span class="c">#</span>
+<span class="nv">integer</span><span class="o">=</span><span class="s1">'typeset -i'</span>
+<span class="nv">l</span><span class="o">=</span><span class="nb">ls
+</span><span class="nv">la</span><span class="o">=</span><span class="s1">'l -a'</span>
+<span class="nv">ll</span><span class="o">=</span><span class="s1">'l -l'</span>
+<span class="nv">lo</span><span class="o">=</span><span class="s1">'l -a -l'</span>
+<span class="nb">local</span><span class="o">=</span><span class="nb">typeset
+</span><span class="nv">login</span><span class="o">=</span><span class="s1">'exec login'</span> <span class="c">#?</span>
+<span class="nv">nameref</span><span class="o">=</span><span class="s1">'typeset -n'</span>
+<span class="nb">nohup</span><span class="o">=</span><span class="s1">'nohup '</span> <span class="c">#</span>
+<span class="nv">r</span><span class="o">=</span><span class="s1">'fc -e -'</span>
+<span class="nb">source</span><span class="o">=</span><span class="s1">'PATH=$PATH:. command .'</span> <span class="c">#</span>
+<span class="nb">type</span><span class="o">=</span><span class="s1">'whence -v'</span> <span class="c">#</span>
+</pre></div>
+</div>

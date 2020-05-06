@@ -1,0 +1,17 @@
+
+<h1>
+<span id="google-chromeのマルチプロセスの長所と短所" class="fragment"></span><a href="#google-chrome%E3%81%AE%E3%83%9E%E3%83%AB%E3%83%81%E3%83%97%E3%83%AD%E3%82%BB%E3%82%B9%E3%81%AE%E9%95%B7%E6%89%80%E3%81%A8%E7%9F%AD%E6%89%80"><i class="fa fa-link"></i></a>Google Chromeのマルチプロセスの長所と短所</h1>
+
+<p>Google Chromeは早いことで有名なブラウザですが、マルチプロセスで起動するので、其の分共有メモリなどが重複して使用され、レンダリングによる負担が重くなったり、メモリの使用量が増えてしまったりします。もちろん、メモリリークなどの脆弱性に対して強くなり、Abortしても他のタブを巻き添えにしなくて済むのでメモリとCPUに余裕の在るPCでは問題にはなりません。しかし、メモリも1GBしか積んでいないような古いPCでは別です。</p>
+
+<h1>
+<span id="シングルプロセスで利用する方法" class="fragment"></span><a href="#%E3%82%B7%E3%83%B3%E3%82%B0%E3%83%AB%E3%83%97%E3%83%AD%E3%82%BB%E3%82%B9%E3%81%A7%E5%88%A9%E7%94%A8%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95"><i class="fa fa-link"></i></a>シングルプロセスで利用する方法</h1>
+
+<p>Google Chromeではシングルプロセスにはできませんが、オープンソース版のChromiumを利用すればシングルプロセスオプションが可能です。<br>
+Googleアカウントでログインしていれば同じ設定で利用できます。<br>
+違いとしてはFlashが入っているかどうかだけです。FlashはOS<br>
+オプションの設定は<a href="http://chrome.half-moon.org/43.html" rel="nofollow noopener" target="_blank">起動オプション - Google Chrome まとめWiki</a>をご参照ください。<br>
+使うオプションは<code>--single-process</code>です。<br>
+シングルプロセスで起動すると<a>chrome://newtab</a>がGoogleのページまたはホームに設定しているページに飛んでしまいます。<br>
+おそらくこのオプションは検証されていない可能性が高いので、不具合が発生して強制終了することも多くなります。<br>
+(注)バーション45以上だとChromiumでもサポートされていません。</p>

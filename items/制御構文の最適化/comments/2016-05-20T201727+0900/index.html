@@ -1,0 +1,23 @@
+<p>何を以て簡潔とおっしゃってるのかわかりませんが、数値のエラーチェック等これ以上追加しないのであれば</p>
+
+<div class="code-frame" data-lang="c"><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">orig</span><span class="p">[</span><span class="mi">255</span><span class="p">];</span>
+    <span class="cm">/*円ドル換算*/</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span><span class="n">orig</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'\\'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"$%.f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mo">00</span><span class="mi">81</span> <span class="o">*</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">orig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="sc">'$'</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\\</span><span class="s">%.f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="mi">124</span><span class="p">.</span><span class="mi">21</span> <span class="o">*</span> <span class="n">atoi</span><span class="p">(</span><span class="n">orig</span><span class="o">+</span><span class="mi">1</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Error:input incorrect.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div></div>
+
+<p>とかでいいのでは?</p>

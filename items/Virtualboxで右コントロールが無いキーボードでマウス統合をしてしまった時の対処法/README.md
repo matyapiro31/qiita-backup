@@ -1,0 +1,2 @@
+VirtualboxはCtrl+G,Right Ctrlでマウス入力を切り替えることができますが、うっかりRight Ctrlのないキーボードでこれをやってしまうと、Virtualboxから抜けられなくなります。あらかじめそういう風にならないよう他のキーを割り当てることも重要ですが、うっかりしてしまったときには、
+Windows Ctrl+Del+Altを押す が有効です。

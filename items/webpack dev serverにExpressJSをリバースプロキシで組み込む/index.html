@@ -1,0 +1,43 @@
+<p>expressを組み込みたい時、Webpack dev serverにはwebpackd dev middlewareを使って組み込みますが、vue.js用テンプレートのwebpackの設定が面倒臭すぎてリバースプロキシを使うことにしました。</p>
+
+<h1>
+<span id="パッケージのインストール" class="fragment"></span><a href="#%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>パッケージのインストール</h1>
+
+<p>http-proxyパッケージを使います。</p>
+
+<p><code>npm install --save-dev express http-proxy</code></p>
+
+<div class="code-frame" data-lang="javascript">
+<div class="code-lang"><span class="bold">server.js</span></div>
+<div class="highlight"><pre><span class="kd">const</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">()</span>
+<span class="kd">const</span> <span class="nx">NODE_ENV</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span>
+<span class="kd">const</span> <span class="nx">WEBPACK_PORT</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">WEBPACK_PORT</span> <span class="o">||</span> <span class="mi">8080</span>
+<span class="kd">const</span> <span class="nx">PORT</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">PORT</span> <span class="o">||</span> <span class="mi">8081</span>
+<span class="kd">const</span> <span class="nx">httpProxy</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">http-proxy</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">apiProxy</span> <span class="o">=</span> <span class="nx">httpProxy</span><span class="p">.</span><span class="nx">createProxyServer</span><span class="p">()</span>
+
+<span class="c1">// for Promise debugging.</span>
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">unhandledRejection</span><span class="dl">'</span><span class="p">,</span> <span class="nx">console</span><span class="p">.</span><span class="nx">dir</span><span class="p">)</span>
+<span class="c1">// Serve the files on port 8081.</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">PORT</span><span class="p">,</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`Server is running at http://localhost:</span><span class="p">${</span><span class="nx">PORT</span><span class="p">}</span><span class="s2">/`</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/api/v1/search</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+<span class="c1">// insert api code here.</span>
+<span class="p">})</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nx">NODE_ENV</span><span class="o">==</span><span class="dl">"</span><span class="s2">development</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">app</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="sr">/.*/</span><span class="p">,</span> <span class="k">async</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">apiProxy</span><span class="p">.</span><span class="nx">web</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="p">{</span><span class="na">target</span><span class="p">:</span> <span class="s2">`http://localhost:</span><span class="p">${</span><span class="nx">WEBPACK_PORT</span><span class="p">}</span><span class="s2">`</span><span class="p">})</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<p>これだけで完了です。本番環境ではNginxなどを使ってリバースプロキシしてください。</p>

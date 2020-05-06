@@ -1,0 +1,33 @@
+<p>for文</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="k">for</span> <span class="o">((</span><span class="nv">i</span><span class="o">=</span>0<span class="p">;</span>i&lt;10<span class="p">;</span>i++<span class="o">))</span><span class="p">;</span><span class="k">do</span>
+~
+<span class="k">done</span>
+</pre></div></div>
+
+<p>コマンド出力から特定の文字を含む行数をカウント</p>
+
+<p><code>command | grep word | wc -l</code></p>
+
+<p>変数の変数(可変変数)</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">bar</span><span class="o">=</span><span class="nb">test
+</span><span class="nv">foo</span><span class="o">=</span>bar
+<span class="nb">echo</span> <span class="k">${</span><span class="p">!foo</span><span class="k">}</span> <span class="c">#test</span>
+</pre></div></div>
+
+<p>配列</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">array</span><span class="o">=(</span>a b c<span class="o">)</span>
+<span class="nb">echo</span> <span class="k">${</span><span class="nv">array</span><span class="p">[@]</span><span class="k">}</span> <span class="c"># a b c</span>
+<span class="nb">echo</span> <span class="k">${</span><span class="nv">array</span><span class="p">[*]</span><span class="k">}</span> <span class="c"># a b c</span>
+<span class="nb">echo</span> <span class="k">${</span><span class="nv">array</span><span class="p">[0]</span><span class="k">}</span> <span class="c"># a</span>
+</pre></div></div>
+
+<p>if文</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="k">if</span> <span class="o">[[</span> 2 <span class="o">&gt;</span> 1 <span class="o">&amp;&amp;</span> <span class="nv">$a</span> <span class="o">!=</span> foo <span class="o">]]</span> <span class="c"># &gt;が使え､変数aが空でもok.</span>
+<span class="k">then</span>
+  :
+<span class="k">fi</span>
+</pre></div></div>

@@ -1,0 +1,82 @@
+
+<h1>
+<span id="xmllintを使ってwikipediaの構造を解析する" class="fragment"></span><a href="#xmllint%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6wikipedia%E3%81%AE%E6%A7%8B%E9%80%A0%E3%82%92%E8%A7%A3%E6%9E%90%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>xmllintを使ってWikipediaの構造を解析する</h1>
+
+<p>Wikipediaで国名を調べて自動的に国旗を取得するプログラムを作りたかったので、ChromeでWikipediaの構造を解析した。<br>
+例えばシエラレオネの場合、国旗のimg要素の中のsrc属性で指定されているpngファイルは</p>
+
+<div class="code-frame" data-lang="html"><div class="highlight"><pre><span class="nt">&lt;img</span> <span class="na">alt=</span><span class="s">"シエラレオネの国旗"</span> 
+<span class="na">src=</span><span class="s">"//upload.wikimedia.org/wikipedia/commons/thumb/
+1/17/Flag_of_Sierra_Leone.svg/
+125px-Flag_of_Sierra_Leone.svg.png"</span>
+<span class="err">...</span>
+<span class="nt">&gt;</span>
+</pre></div></div>
+
+<p>となっている。(長いので中略&amp;改行を入れている)<br>
+其れに対し、元のSVGファイルのURLはこうなっている。<br>
+<code>https://upload.wikimedia.org/wikipedia/commons/1/17/Flag_of_Sierra_Leone.svg</code><br>
+これより、<code>/thumb</code>と<code>125px-...</code>を除けば正しいURLになることが分かる。<br>
+また、この要素は&lt;html&gt;からの配置も固定されている。<br>
+xmllintではXML構造を通常のファイル構造と同様に閲覧することができるシェルモードが用意されている。<br>
+同じ要素が幾つも存在する場合はdiv[3]のように番号を指定する。属性は<a href="/src" class="user-mention js-hovercard" title="src" data-hovercard-target-type="user" data-hovercard-target-name="src">@src</a>のように名前を指定する。<br>
+echoを使って対話モードに放り込みます。こんな感じです。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">"cat /html/body/div[3]/div[3]/div[4]/dl[1]/dd/table/tr[1]/th[1]/a/img/@src"</span> <span class="se">\</span>
+|xmllint <span class="nt">--shell</span> <span class="nv">$URL</span>
+</pre></div></div>
+
+<p>あとはURLの文字列をちょいちょいといじってwgetするだけです。<br>
+自動でGIMPを起動したり、対話モードで複数ダウンロードしたりするようにしたのがこのスクリプトです。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="k">function </span>get_flag<span class="o">()</span> <span class="o">{</span>
+  <span class="nv">country</span><span class="o">=</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span>
+  wget <span class="nt">-qO-</span> https://ja.wikipedia.org/wiki/<span class="s2">"</span><span class="k">${</span><span class="nv">country</span><span class="k">}</span><span class="s2">"</span> <span class="o">&gt;</span> /tmp/country.tmp
+  <span class="nv">array</span><span class="o">=(</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">"cat /html/body/div[3]/div[3]/div[4]/dl[1]/dd/table/tr[1]/th[1]/a/img/@src"</span>|xmllint <span class="nt">--shell</span> /tmp/country.tmp|tail <span class="nt">-2</span>|head <span class="nt">-1</span>|sed <span class="nt">-e</span> <span class="s1">'s/\// /g'</span><span class="sb">`</span><span class="o">)</span>
+  <span class="nb">rm</span> /tmp/country.tmp
+
+  <span class="nv">log</span><span class="o">=</span><span class="si">$(</span><span class="nv">LANG</span><span class="o">=</span>C wget  https://upload.wikimedia.org/wikipedia/commons/<span class="k">${</span><span class="nv">array</span><span class="p">[5]</span><span class="k">}</span>/<span class="k">${</span><span class="nv">array</span><span class="p">[6]</span><span class="k">}</span>/<span class="k">${</span><span class="nv">array</span><span class="p">[7]</span><span class="k">}</span> 2&gt;&amp;1<span class="si">)</span>
+  <span class="nv">fname</span><span class="o">=(</span> <span class="si">$(</span><span class="nb">echo</span> <span class="s2">"</span><span class="nv">$log</span><span class="s2">"</span>|tail <span class="nt">-1</span><span class="si">)</span> <span class="o">)</span>
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="k">${</span><span class="nv">fname</span><span class="p">[5]</span><span class="k">}</span><span class="s2">"</span> <span class="o">!=</span> <span class="s2">"Found."</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+    if</span> <span class="o">[</span> <span class="k">${</span><span class="nv">2</span><span class="k">}</span> <span class="o">!=</span> <span class="s2">"true"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+      </span>gimp <span class="s2">"</span><span class="k">${</span><span class="nv">fname</span><span class="p">[5]</span>:1:-1<span class="k">}</span><span class="s2">"</span> &amp; <span class="o">&gt;</span>/dev/null
+    <span class="k">else
+      </span><span class="nb">echo </span>Done.
+    <span class="k">fi
+  else
+    </span><span class="nb">echo </span>Faild to get flag of <span class="k">${</span><span class="nv">country</span><span class="k">}</span><span class="nb">.</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
+<span class="c">#option detection.</span>
+<span class="k">while </span><span class="nb">getopts</span> <span class="s2">"id"</span> opts
+<span class="k">do
+  if</span> <span class="o">[</span> <span class="k">${</span><span class="nv">opts</span><span class="k">}</span> <span class="o">=</span> <span class="s2">"i"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+    </span><span class="nv">std_in</span><span class="o">=</span><span class="s2">"true"</span>
+  <span class="k">elif</span> <span class="o">[</span> <span class="k">${</span><span class="nv">opts</span><span class="k">}</span> <span class="o">=</span> <span class="s2">"d"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+    </span><span class="nv">download_only</span><span class="o">=</span><span class="s2">"true"</span>
+  <span class="k">fi
+done
+
+while</span> <span class="o">[</span> <span class="k">${</span><span class="nv">std_in</span><span class="k">:-</span><span class="nv">false</span><span class="k">}</span> <span class="o">!=</span> <span class="s2">"true"</span> <span class="nt">-a</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span><span class="s2">"</span> <span class="o">]</span>
+<span class="k">do
+  </span>get_flag <span class="s2">"</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span><span class="s2">"</span> <span class="k">${</span><span class="nv">download_only</span><span class="k">:-</span><span class="nv">false</span><span class="k">}</span>
+  <span class="nb">shift
+</span><span class="k">done
+
+while</span> <span class="o">[</span> <span class="k">${</span><span class="nv">std_in</span><span class="k">:-</span><span class="nv">false</span><span class="k">}</span> <span class="o">=</span> <span class="s2">"true"</span> <span class="o">]</span>
+<span class="k">do
+  </span><span class="nb">printf</span> <span class="s1">'&gt; '</span>
+  <span class="nb">read</span> <span class="nt">-r</span> country
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="k">${</span><span class="nv">country</span><span class="k">}</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"exit"</span> <span class="nt">-o</span> <span class="s2">"</span><span class="k">${</span><span class="nv">country</span><span class="k">}</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"quit"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+    </span><span class="nb">exit </span>0
+  <span class="k">fi
+  if</span> <span class="o">[</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">country</span><span class="k">}</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+    </span>get_flag <span class="s2">"</span><span class="k">${</span><span class="nv">country</span><span class="k">}</span><span class="s2">"</span> <span class="k">${</span><span class="nv">download_only</span><span class="k">:-</span><span class="nv">false</span><span class="k">}</span>
+  <span class="k">fi
+done</span>
+</pre></div></div>
+
+<p>参考:<br>
+1. <a href="http://takuya-1st.hatenablog.jp/entry/2015/09/30/000000" rel="nofollow noopener" target="_blank">xmllint で xml をディレクトリみたいにｃｄして辿る - それマグで!</a><br>
+2. <a href="http://labs.opentone.co.jp/?p=5273" rel="nofollow noopener" target="_blank">ShellScriptでXMLの内容を取り出す | Opentone Labs.</a></p>

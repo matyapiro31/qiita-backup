@@ -1,0 +1,269 @@
+
+<h1>
+<span id="所感" class="fragment"></span><a href="#%E6%89%80%E6%84%9F"><i class="fa fa-link"></i></a>所感</h1>
+
+<p>非常に便利そうなライブラリが沢山ある。ただ、それらは他の言語のそれと違って標準ライブラリではない。いわゆる公式なライブラリがあまり存在しないところはJSの文化なのだろうか。個人的にはDebianの放置されすぎてるパッケージ群を見てきたのでいずれ動作しないライブラリの死骸の山ができるんじゃないか、自分のアプリが依存していて動かなくなるんじゃないかと不安が募る。C言語のライブラリの場合は.dllや.soになり、多くの言語で再利用が可能です。しかし、NodeJSではNodeJSでしか動かない。</p>
+
+<h1>
+<span id="やりたいこと" class="fragment"></span><a href="#%E3%82%84%E3%82%8A%E3%81%9F%E3%81%84%E3%81%93%E3%81%A8"><i class="fa fa-link"></i></a>やりたいこと</h1>
+
+<p>マストドンの拡張機能の仕様がまだ定まってないので独自の拡張機能を作る。=&gt;マストドンに必須のNodeJSなら導入難易度低いよね。<br>
+というわけで勝手に<code>/api/v2</code>を作ってやらう。</p>
+
+<h1>
+<span id="計画" class="fragment"></span><a href="#%E8%A8%88%E7%94%BB"><i class="fa fa-link"></i></a>計画</h1>
+
+<p>Web APIというのは要は特殊なWebページの一種(暴論)なので、Webサーバがあれば十分です。というわけでNode.js以外に導入するのはライブラリのみです。<br>
+Nginxのマストドン用の設定に以下の内容を加えてください。proxy_passのポート以外他と同じです。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>location /api/v2/ <span class="o">{</span>
+    proxy_set_header Host <span class="nv">$host</span><span class="p">;</span>
+    proxy_set_header X-Real-IP <span class="nv">$remote_addr</span><span class="p">;</span>
+    proxy_set_header X-Forwarded-For <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+    proxy_set_header X-Forwarded-Proto https<span class="p">;</span>
+    proxy_set_header Proxy <span class="s2">""</span><span class="p">;</span>
+
+    proxy_pass http://127.0.0.1:4040<span class="p">;</span>
+    proxy_buffering off<span class="p">;</span>
+    proxy_redirect off<span class="p">;</span>
+    proxy_http_version 1.1<span class="p">;</span>
+    proxy_set_header Upgrade <span class="nv">$http_upgrade</span><span class="p">;</span>
+    proxy_set_header Connection <span class="nv">$connection_upgrade</span><span class="p">;</span>
+
+    tcp_nodelay on<span class="p">;</span>
+  <span class="o">}</span>
+</pre></div></div>
+
+<p>これで<code>/api/v2</code>を4040で待ち構えているNodeJSのサーバに流すことができます。</p>
+
+<h1>
+<span id="apiを作る" class="fragment"></span><a href="#api%E3%82%92%E4%BD%9C%E3%82%8B"><i class="fa fa-link"></i></a>APIを作る</h1>
+
+<p>Web APIはGET、POST、PATCH、DELETEなどのHttpメソッド、<code>Content-Type</code>で決まるボディ部分の書式、必要なデータと任意のデータ、<br>
+返すデータの書式、APIの挙動、どのくらいの回数呼び出すか、が考えるべきポイントです。特に呼び出し回数はそれだけアクセス数が増えることになるので、出来る限り一度にできることが重要です。また、マストドンはAPIを出来る限りシンプルにすることを心がけており、認証はアクセストークンのみです。ただしこれもあまりよろしくない仕様です。<br>
+というわけで投票APIを作りたいと思います。</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: right">name</th>
+<th style="text-align: right">comment</th>
+<th style="text-align: right">required</th>
+<th style="text-align: right">型</th>
+<th style="text-align: right">初期値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right">title</td>
+<td style="text-align: right">タイトルもしくは質問文</td>
+<td style="text-align: right">true</td>
+<td style="text-align: right">string</td>
+<td style="text-align: right">''</td>
+</tr>
+<tr>
+<td style="text-align: right">choices</td>
+<td style="text-align: right">質問文</td>
+<td style="text-align: right">true</td>
+<td style="text-align: right">Array</td>
+<td style="text-align: right">[]</td>
+</tr>
+<tr>
+<td style="text-align: right">limit</td>
+<td style="text-align: right">投票期限</td>
+<td style="text-align: right">false</td>
+<td style="text-align: right">Number</td>
+<td style="text-align: right">0</td>
+</tr>
+<tr>
+<td style="text-align: right">type</td>
+<td style="text-align: right">グラフの形状</td>
+<td style="text-align: right">false</td>
+<td style="text-align: right">string</td>
+<td style="text-align: right">'bar'</td>
+</tr>
+</tbody>
+</table>
+
+<p>設定が必須なデータ以外は初期値を持たせることで省略できるようにします。<br>
+choicesは配列です。curlで指定するときは"choices=foo"ではなく、"choices[]=bar"とします。<br>
+次にメソッドです。初めの投票の作成はPOSTでいいでしょう。昔の◯acebookなどはGETでメールアドレスなどを送っていましたが、その場合ブラウザ履歴などから情報が漏れてしまいます。<br>
+この場合ほぼ流れで<code>Content-Type</code>は<strong>application/x-www-form-urlencoded</strong>になります。<br>
+このAPIが返す値については公開/非公開などの情報は画像アップロードAPIと同じく設定しません。<sup><sub>あ、バグ見っけた</sub></sup><br>
+返すべき値は期限、HTMLに変換された文章、投票idです。<br>
+JSONで返すのが一番簡単です。他のAPIに習い、名前はできるだけ統一します。urlはブラウザで表示するときのもの、uriはDataURIによる埋め込み用です。</p>
+
+<div class="code-frame" data-lang="javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nl">id</span><span class="p">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">limit</span><span class="p">:</span> <span class="dl">"</span><span class="s2">YYYY-MM-DDTHH:mm:ss.sssZ</span><span class="dl">"</span><span class="p">,</span>
+  <span class="nx">meta</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nl">title</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span>
+    <span class="nx">type</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span>
+    <span class="nx">choices</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="na">content</span><span class="p">:</span> <span class="dl">"</span><span class="s2">&lt;p&gt;answer1&lt;/p&gt;</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">id</span><span class="p">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="na">vote</span><span class="p">:</span> <span class="mi">5000000000000000</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="na">content</span><span class="p">:</span> <span class="dl">"</span><span class="s2">&lt;p&gt;answer2&lt;/p&gt;</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">id</span><span class="p">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="na">vote</span><span class="p">:</span> <span class="mi">10</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nx">created_at</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">YYYY-MM-DDTHH:mm:ss.sssZ</span><span class="dl">"</span>
+  <span class="nx">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">poll</span><span class="dl">"</span><span class="p">,</span>
+  <span class="nx">url</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span>
+  <span class="nx">uri</span><span class="p">:</span> <span class="nx">string</span>
+<span class="p">}</span>
+</pre></div></div>
+
+<p>さて、URLはわかりやすく<code>/api/v2/poll</code>とします。<br>
+次にPostgreSQLに保存するテーブルの書式を決めます。<br>
+選択肢のデータは別のテーブルに保存することにします。LIMITは予約語なのでtime_limitとしました。<br>
+連続値の扱いにシーケンスを用いているので先にシーケンスも作成します。</p>
+
+<div class="code-frame" data-lang="sql"><div class="highlight"><pre><span class="k">CREATE</span> <span class="n">SEQUENCE</span> <span class="n">poll_id_seq</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="n">SEQUENCE</span> <span class="n">choices_id_seq</span><span class="p">;</span>
+</pre></div></div>
+
+<p>次にテーブルの列名、型、既定値を設定します。</p>
+
+<div class="code-frame" data-lang="sql"><div class="highlight"><pre><span class="c1">--投票のテーブル</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">poll</span> <span class="p">(</span>
+<span class="n">id</span> <span class="nb">bigint</span> <span class="k">DEFAULT</span> <span class="n">nextval</span><span class="p">(</span><span class="s1">'poll_id_seq'</span><span class="p">),</span>
+<span class="n">account_id</span> <span class="nb">int</span><span class="p">,</span>
+<span class="n">title</span> <span class="nb">text</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
+<span class="n">time_limit</span> <span class="nb">timestamp</span> <span class="k">DEFAULT</span> <span class="p">(</span><span class="n">now</span><span class="p">())::</span><span class="nb">timestamp</span> <span class="p">,</span>
+<span class="n">created_at</span> <span class="nb">timestamp</span> <span class="k">DEFAULT</span> <span class="p">(</span><span class="n">now</span><span class="p">())::</span><span class="nb">timestamp</span> <span class="p">,</span>
+<span class="k">type</span> <span class="nb">text</span> <span class="k">DEFAULT</span> <span class="s1">'bar'</span><span class="p">,</span>
+<span class="n">choices_id</span> <span class="nb">int</span><span class="p">[]</span> <span class="k">DEFAULT</span> <span class="n">ARRAY</span><span class="p">[]::</span><span class="nb">integer</span><span class="p">[],</span>
+<span class="n">url</span> <span class="nb">text</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
+<span class="n">uri</span> <span class="nb">text</span> <span class="k">DEFAULT</span> <span class="s1">''</span>
+<span class="p">);</span>
+<span class="c1">-- 選択肢のテーブル</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">choices</span> <span class="p">(</span>
+<span class="n">id</span> <span class="nb">int</span> <span class="k">DEFAULT</span> <span class="n">nextval</span><span class="p">(</span><span class="s1">'choices_id_seq'</span><span class="p">),</span>
+<span class="n">content</span> <span class="nb">text</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
+<span class="n">vote</span> <span class="nb">int</span> <span class="k">DEFAULT</span> <span class="mi">0</span>
+<span class="p">);</span>
+</pre></div></div>
+
+<p>さて、次に問い合わせの流れを確認しましょう。<br>
+1. <code>/api/v2/poll</code>にデータを送信する。<br>
+2. 受け取ったデータをチェックした後にSQLで保存する。<br>
+3. SQL文のエラーをチェックし、失敗している場合は削除する。<br>
+4. 正しい場合はJSONでデータを返し、不正な場合は400を返す。別に418でも良いんですが。 </p>
+
+<p>Node.jsのコードはこうなります。</p>
+
+<div class="code-frame" data-lang="js"><div class="highlight"><pre><span class="kd">const</span> <span class="nx">PORT</span><span class="o">=</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">PORT</span><span class="o">||</span><span class="mi">4040</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">DATABASE_URL</span><span class="o">=</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">DATABASE_URL</span><span class="o">||</span><span class="dl">'</span><span class="s1">postgresql://mastodon@localhost:5432/mastodon_production</span><span class="dl">'</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">fs</span><span class="o">=</span><span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">fs</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">pg</span><span class="o">=</span><span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">pg</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">express</span><span class="o">=</span><span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">app</span><span class="o">=</span><span class="nx">express</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">bodyParser</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">body-parser</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="cm">/* express setting. */</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">bodyParser</span><span class="p">.</span><span class="nx">json</span><span class="p">());</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">bodyParser</span><span class="p">.</span><span class="nx">urlencoded</span><span class="p">({</span> <span class="na">extended</span><span class="p">:</span> <span class="kc">true</span> <span class="p">}));</span>
+<span class="cm">/* pg setting. */</span>
+<span class="kd">var</span> <span class="nx">client</span><span class="o">=</span><span class="k">new</span> <span class="nx">pg</span><span class="p">.</span><span class="nx">Client</span><span class="p">(</span><span class="nx">DATABASE_URL</span><span class="p">);</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="dl">'</span><span class="s1">/api/v2/poll</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">title</span><span class="o">=</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">title</span><span class="o">||</span><span class="dl">''</span><span class="p">;</span>
+    <span class="kd">const</span> <span class="nx">choices</span><span class="o">=</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">choices</span><span class="o">||</span><span class="p">[];</span>
+    <span class="kd">const</span> <span class="nx">limit</span><span class="o">=</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">limit</span><span class="p">)</span><span class="o">||</span><span class="mi">0</span><span class="p">;</span>
+    <span class="kd">const</span> <span class="nx">type</span><span class="o">=</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">type</span><span class="o">||</span><span class="dl">'</span><span class="s1">bar</span><span class="dl">'</span><span class="p">;</span>
+    <span class="kd">const</span> <span class="nx">token</span><span class="o">=</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">Authorization</span><span class="dl">'</span><span class="p">)</span><span class="o">||</span><span class="dl">''</span><span class="p">).</span><span class="nx">substring</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span>
+    <span class="kd">const</span> <span class="nx">choices_id</span><span class="o">=</span><span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+    <span class="kd">const</span> <span class="nx">choices_data</span><span class="o">=</span><span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
+
+    <span class="k">await</span> <span class="nx">client</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+    <span class="c1">//get Account ID.</span>
+    <span class="kd">const</span> <span class="nx">account_id</span><span class="o">=</span><span class="k">await</span> <span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="dl">'</span><span class="s1">SELECT id FROM  oauth_access_tokens WHERE token=$1</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="nx">token</span><span class="p">]);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">account_id</span><span class="p">.</span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="o">===</span><span class="mi">0</span><span class="p">?</span><span class="dl">"</span><span class="s2">Invalid AccessToken.</span><span class="dl">"</span><span class="p">:</span><span class="dl">""</span><span class="p">);</span>
+    <span class="c1">//check if parameter is valid.</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">choices</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">400</span><span class="p">);</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">Invalid object type: choices[].</span><span class="dl">'</span><span class="p">);</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">account_id</span><span class="p">.</span><span class="nx">rows</span><span class="p">.</span><span class="nx">length</span><span class="o">===</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">400</span><span class="p">);</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">Invalid object type: choices[].</span><span class="dl">'</span><span class="p">);</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">//set choices value.</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">choices</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">((</span><span class="k">typeof</span> <span class="nx">choices</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span><span class="o">!==</span><span class="dl">"</span><span class="s2">string</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">400</span><span class="p">);</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">Invalid parameter: choices.</span><span class="dl">'</span><span class="p">);</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="kd">const</span> <span class="nx">ret</span><span class="o">=</span><span class="k">await</span> <span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="dl">'</span><span class="s1">INSERT INTO choices (content) VALUES ($1) RETURNING *</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="nx">choices</span><span class="p">[</span><span class="nx">i</span><span class="p">]]);</span>
+            <span class="nx">choices_id</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">id</span><span class="p">);</span>
+            <span class="nx">choices_data</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+                <span class="na">content</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">content</span><span class="p">,</span>
+                <span class="na">id</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">id</span><span class="p">,</span>
+                <span class="na">vote</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">vote</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">//set time limit as unix time.</span>
+    <span class="kd">const</span> <span class="nx">time_limit</span><span class="o">=</span><span class="nx">limit</span><span class="o">+</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">()</span><span class="o">/</span><span class="mi">1000</span><span class="p">);</span>
+    <span class="kd">const</span> <span class="nx">ret</span><span class="o">=</span><span class="k">await</span> <span class="nx">client</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+        <span class="dl">'</span><span class="s1">INSERT INTO poll (title,time_limit,type,account_id,created_at,choices_id,url,uri) VALUES ($1,to_timestamp($2),$3,$4,now(),$5,$6,$7) RETURNING *</span><span class="dl">'</span><span class="p">,</span>
+        <span class="p">[</span><span class="nx">title</span><span class="p">,</span> <span class="nx">time_limit</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">account_id</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">id</span><span class="p">,</span><span class="nx">choices_id</span><span class="p">,</span><span class="dl">"</span><span class="s2">/system/media_attachments/poll/</span><span class="dl">"</span><span class="o">+</span><span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">())</span><span class="o">+</span><span class="dl">"</span><span class="s2">0</span><span class="dl">"</span><span class="p">,</span><span class="dl">"</span><span class="s2">tag:example.com</span><span class="dl">"</span><span class="p">]);</span>
+    <span class="k">await</span> <span class="nx">client</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+    <span class="nx">json_ret</span><span class="o">=</span><span class="p">{</span>
+        <span class="dl">"</span><span class="s2">id</span><span class="dl">"</span><span class="p">:</span><span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">id</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">limit</span><span class="dl">"</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">time_limit</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">meta</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="dl">"</span><span class="s2">title</span><span class="dl">"</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">title</span><span class="p">,</span>
+            <span class="dl">"</span><span class="s2">type</span><span class="dl">"</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">type</span><span class="p">,</span>
+            <span class="dl">"</span><span class="s2">choices</span><span class="dl">"</span><span class="p">:</span> <span class="nx">choices_data</span>
+        <span class="p">},</span>
+        <span class="dl">"</span><span class="s2">created_at</span><span class="dl">"</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">created_at</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">type</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">poll</span><span class="dl">"</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">url</span><span class="dl">"</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">url</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">uri</span><span class="dl">"</span><span class="p">:</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">uri</span>
+    <span class="p">};</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">json_ret</span><span class="p">);</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+<span class="p">});</span>
+</pre></div></div>
+
+<p>これで質問の作成APIが完成です。<br>
+返ってきた値の例：</p>
+
+<div class="code-frame" data-lang="json"><div class="highlight"><pre><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"9"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"limit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-09-08T15:59:09.000Z"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"circle"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"choices"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">41</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"vote"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test2"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"vote"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-09-08T15:57:29.000Z"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"poll"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/system/media_attachments/poll/15048862490000"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tag:example.com"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></pre></div></div>
+
+<p>次は投票して票数を操作するAPIを作りたいと思います。<br>
+最後にSVGに投票を変換して、拡張でtootにSVGを表示させたいと思います。</p>

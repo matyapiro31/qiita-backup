@@ -1,0 +1,61 @@
+<p>自分が体験した不具合やアイデアなどについて箇条書きしていきます。</p>
+
+<ul>
+<li>PostgreSQLでは同時接続数に限界があるのでpgpool2やpgbouncerを使おう。</li>
+<li>DockerではCPU速度ではあまり差は出ないがネットワーク速度では差が大きく出る。</li>
+<li>マストドンの接続に掛かる時間はNode.jsが50%、PostgreSQLが20%、SSLが20%ぐらいの割合で遅延を起こしている。</li>
+<li>クエリーキャッシュは非常に有効。</li>
+<li>画像などは通常<code>public/system</code>以下にインストールされているが、設定で変更できる。</li>
+<li>Node.jsは時々再起動させると速くなる。大体1日毎ぐらい。</li>
+<li>Cloudflareならば10年使える証明書が無料で手に入る。</li>
+<li>zopfliを用いた事前圧縮はgzip_staticをalwaysにする必要があるが、既に圧縮されている形式以外に対しては非常に有効。</li>
+<li>フォントなどは301で飛ばせばcdnjs.comなどのものを使える。新規ユーザーからのアクセスが速くなる。</li>
+<li>エラーは<code>journalctl -xe|grep bundle</code>でWebのエラーを、<code>journalctl -xe|grep npm</code>でストリーミングのエラーを見られる。</li>
+<li>不正アクセス試行があるかどうかは<code>/var/log/nginx/error.log</code>を見れば分かる。</li>
+<li>不正アクセスをしようとしているユーザーに対してはNginxで502を返すようにするとよい。</li>
+<li>sshは自分のIPアドレスからしか接続できないようにすることで、無駄なブルートフォース攻撃の類を認証前に弾くことができる。</li>
+<li>JavaScriptやHTMLを追加したければ、<code>app/view</code>以下のファイルをいじること。HamlでUIが記述されている。</li>
+<li>common.cssを変更しても元のファイルは存在しているのでAjaxでより下に追加すれば元の色合いにできる。</li>
+<li>管理者メニューにはNginxからBASIC認証辺りを追加でかけておけば、怪しいアプリとかに変なことをされることはない。</li>
+<li>Nginxの<code>http_sub_module</code>を使えば動的にファイルを書き換えられる。</li>
+<li>SMTPによるメール送信は多くのレンタルサーバなどで禁止されている。いくつかの認められているサービス以外使えないものも多い。</li>
+<li>PNG画像はzopfliで再圧縮すれば最小化できる。</li>
+<li>快適なインスタンスはトップページの応答速度が0.2秒以下である必要がある。</li>
+<li>443番ポート以外は外部に対して開ける必要はない。ssh用のポートは別として。</li>
+<li>.tkドメインは無料で使用できるので試用する際に便利。</li>
+<li>Rubyバージョンは2.4.1以上でないと正常に動かない。</li>
+<li>IEは11でも多分動いてくれない。</li>
+<li>ホーム画面に追加する方がどんなアプリより快適に使える。</li>
+<li>マストドン用のコマンドは実行エラーが出ても戻らず破壊的変更をするので再起動すると起動しなくなるのでいきなり本番環境でやるのはおすすめしない。</li>
+<li>journalctlは再起動すると前のログが消えるのできちんと設定を変更すること。</li>
+<li>node_modulesは一々ファイル読み込みをするようなので/dev/shmなどに移しておくと高速化する。</li>
+<li>Nginxは設定を変更しても<code>reload</code>だけで反映できる。<code>restart</code>で再起動させると時間がかかる。</li>
+<li>/etc/postgresql/version/main/postgresql.confで<code>synchronous_commit=off</code>を設定すると高速になる。</li>
+<li>Rubyは後に書いたクラスなどの定義が優先されるので、出来る限り独自機能は別のファイルに書いて分けることでアップデートが簡単になる。</li>
+<li>JavaScriptファイルを追加する時は、<code>?v=0.1.0</code>のようにバージョンを指定するとキャッシュを無効化して上書きできる。</li>
+<li>500文字以上でも問題ないが、おそらく1GiB以上あると無理だと思われる。</li>
+<li>画像などの一時的アップロードはアップロード側での制限はないので、Nginxで<code>client_max_body_size 100M;</code>ぐらいにしておく。ちなみにマストドンのデフォルトは無制限。</li>
+<li>DDoS攻撃対策はきっちりしておくこと。1秒間のアクセス回数制限が有効。</li>
+<li>
+<code>sudo sysctl -w vm.drop_caches=3</code>でメモリを解放しよう。</li>
+<li>面倒でもDockerは<code>sudo</code>なしでできるようにしてはいけない。</li>
+<li>Cookieにデータを保存するとログアウトしても見えるので拡張するときはログアウト時に消すこと。</li>
+<li>ufwなどのファイアウォールは立ち上げておくこと。</li>
+<li>
+<code>/user/name.atom</code>からRSS/Atomで購読できる。RSS用のプラグインなどを用いれば簡単にブログなどにTootを掲載できる。</li>
+<li>
+<code>var info=JSON.parse($("#initial-state").innerText);</code>でaccess_tokenを取得できる。</li>
+<li>
+<code>
+div.column,div.drawer {
+resize: horizontal;
+}
+</code>でカラムの幅を調整できるようにできる。</li>
+</ul>
+
+<ul>
+<li>
+<code>let</code>などES6の構文はSafariは対応してないので使えない。<code>for...in</code>構文もダメだが、babelは変換してくれなかったりする。</li>
+<li>インスタンスの内容に関する破壊的変更はできるだけ独断で決めない方が良い。民主的に運営をできるよう、事前にルール等を定めて議会を用意することが重要。</li>
+<li>マストドンが利用しているソフトウェアはRedis,PostgreSQL,Nginx,Postfix,Node.js,Ruby on Rails,certbot,imagemagick,ffmpegなど。ライブラリに至っては400以上ある。はっきり言って更新しなくなったパッケージが出たらそれだけで大幅なコードの改変が必要になるだろう。5年後に同じ手順で構築できる可能性は0%と言っていい。</li>
+</ul>

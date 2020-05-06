@@ -1,0 +1,39 @@
+
+<h1>
+<span id="あるいはtelnet" class="fragment"></span><a href="#%E3%81%82%E3%82%8B%E3%81%84%E3%81%AFtelnet"><i class="fa fa-link"></i></a>あるいはtelnet</h1>
+
+<p>netcatはtcp/ipで通信できるコマンドです。(他にも色々出来ますが。)<br>
+これを使ってwgetみたいなことをやってみます。<br>
+HTTP 1.1ではHost:の記述が必須だそうです。ちなみにtelnetでもnetcatと同じようなことができます。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>netcat example.com 80 &lt;&lt;<span class="o">!</span>
+<span class="o">&gt;</span>GET / HTTP/1.1
+<span class="o">&gt;</span>Host: example.com
+<span class="o">&gt;</span>
+<span class="o">&gt;!</span>
+</pre></div></div>
+
+<h2>解説</h2>
+
+<p>HTTPはポート80です。<br>
+<code>&gt;GET / HTTP/1.1</code> <b><a href="http://example.com/" class="autolink" rel="nofollow noopener" target="_blank">http://example.com/</a></b>をダウンロードします。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="o">&gt;</span>
+<span class="o">&gt;!</span>
+</pre></div></div>
+
+<p>空改行を挟む必要があります。ちなみに!はHTTPではなくbashの方の終了記号です。<br>
+パイプを使う場合、echoより、printfのほうが便利です。また、改行は\nではなく\r\nです。</p>
+
+<h1>
+<span id="学び方" class="fragment"></span><a href="#%E5%AD%A6%E3%81%B3%E6%96%B9"><i class="fa fa-link"></i></a>学び方</h1>
+
+<p><code>curl url --trace FILE</code><br>
+でファイル<em>FILE</em>にcurlのHTTP接続情報が記録されます。これでHTTPリクエストやレスポンスを覚えたら簡易サーバをたてられます。</p>
+
+<h1>
+<span id="httpsに対応する" class="fragment"></span><a href="#https%E3%81%AB%E5%AF%BE%E5%BF%9C%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>HTTPSに対応する</h1>
+
+<p><code>openssl s_client</code>コマンドで同じことができます。こちらはもっとオプションなどが複雑です。httpsでの通信ができるので、そういった安全性が確保する必要のあるネットサービスサービスに対する簡易クライアントになります。<br>
+httpsではSSL/TLSのバージョンを指定することができます。<br>
+HTTP 1.1/TLS 1.2を強制することもできますし、HTTPと同じ感じでできます。</p>

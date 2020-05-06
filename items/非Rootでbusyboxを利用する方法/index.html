@@ -1,0 +1,16 @@
+<p>AndroidではRoot化した後にbusyboxのインストールがほぼ必須です。ですが、busybox自体はroot化せずとも導入が可能です。具体的にはこのbusyboxアプリをインストールし、<br>
+<a href="https://play.google.com/store/apps/details?id=burrows.apps.busybox" class="autolink" rel="nofollow noopener" target="_blank">https://play.google.com/store/apps/details?id=burrows.apps.busybox</a><br>
+ステップ1をこなしておきます。<br>
+Android Terminal Emulatorのシェルはbashではなくmkshなのですが、設定ファイルの.mkshrcは読み込んでくれないので、<br>
+いつでもbusyboxが使えるように、Android Terminal Emulatorの設定を変更します。<br>
+設定-&gt;初期コマンドから初期コマンドを入力します。<br>
+<code>export PATH=$PATH:/data/data/burrows.apps.busybox/app_busybox; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/data/burrows.apps.busybox/app_busybox;clear</code><br>
+これでいつでもbusyboxが使えます。<br>
+<strong>追記</strong><br>
+非rootのAndroidに手前でコンパイルしたものを突っ込もうという勇者は、まずはfakechrootを頑張ってコンパイルすることをおすすめします。<br>
+fakechrootを利用すれば、<code>/</code>が書き込み可能な位置にあるかのように見せかけられます。もしくはarmelの設定でDebianのクロスコンパイルの方法を参考にして<code>./configure LDFLAGS="-static"</code>とでもしてすべてを静的リンクしてください。rootであればDebianのarmelパッケージはそのまま動きます。依存関係は必須ですが。おそらくGCCのマニュアルを読んでクロスコンパイルするのは難易度が高いので、「Debian Cross build」で検索してみましょう。Windowsからはおそらく難しいと思いますので、UbuntuかDebian Unstableをインストールしてみましょう。</p>
+
+<p>更新:Ubuntu/Debianでコマンドをビルドする方法については<br>
+<a href="http://qiita.com/matyapiro31/items/763493e390e58b024ea3" id="reference-122669be08db7d175339">Debianでマルチアーキテクチャビルドを行う</a><br>
+<a href="http://qiita.com/matyapiro31/items/17d8fec6f32ebf9017a4" id="reference-bf9686e4edb33877872c">非RootのAndroidにコマンドをインストールする</a><br>
+を参考にしてください。</p>

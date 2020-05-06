@@ -1,0 +1,16 @@
+#rebootstrap
+debootstrapの技術の一つ。対応していないアーキテクチャ向けに再コンパイルしてdebootstrapによるchroot環境を構築する。
+ちなみにリポジトリに入っていない上、個人が開発したものの模様。こういう人は暇なのかそれとも楽しいのかどっちか。
+[Debian Wiki](https://wiki.debian.org/HelmutGrohne/rebootstrap)
+
+#Cygwin Ports
+MacやBSDのportsとはたぶん関係は無い。
+Cygwinの本家にない多くのUnixライブラリやソフトウェアが揃う。
+難点としてはCygwinが複数リポジトリに対応していないために切り替えが必要であることが挙げられる。
+
+#やれること
+rebootstrapを使ってcygwin-gcc on WineでWin32/64なdebianが作成できるかもしれない。
+それをWindowsにコピーしてCygwinからchrootすれば完全にネイティブなDebianがWindowsで実行できる。ような気がする。
+
+#Gentoo on Cygwin
+Gentooならソースコードベースなのでインストールできそうではある。

@@ -1,0 +1,309 @@
+
+<h1>
+<span id="rootアプリを実際に書いてみる" class="fragment"></span><a href="#root%E3%82%A2%E3%83%97%E3%83%AA%E3%82%92%E5%AE%9F%E9%9A%9B%E3%81%AB%E6%9B%B8%E3%81%84%E3%81%A6%E3%81%BF%E3%82%8B"><i class="fa fa-link"></i></a>rootアプリを実際に書いてみる</h1>
+
+<p>基本的にJavaはできないので、あんまりAndroidは触れたくなかったのですか、こういうのは面白そうなのでやってみました。<br>
+まず、こういうアプリはBusyboxが入っているのが前提なので、テスト環境にもBusyboxを入れる必要があります。Busyboxなしでも大丈夫ですが、そうするとアプリの容量が大きくなってしまうという問題が発生します。<br>
+android向けにコマンドをビルドする方法については、<a href="http://qiita.com/matyapiro31/items/17d8fec6f32ebf9017a4" id="reference-07ef645f3178c84326dc">非RootのAndroidにコマンドをインストールする<br>
+</a>を参考にしてください。<br>
+PIE対応か否かで動いたり、動かなかったりするそうです。<br>
+参照:<a href="http://dsas.blog.klab.org/archives/52211448.html" class="autolink" rel="nofollow noopener" target="_blank">http://dsas.blog.klab.org/archives/52211448.html</a></p>
+
+<h1>
+<span id="こういうのを作る" class="fragment"></span><a href="#%E3%81%93%E3%81%86%E3%81%84%E3%81%86%E3%81%AE%E3%82%92%E4%BD%9C%E3%82%8B"><i class="fa fa-link"></i></a>こういうのを作る</h1>
+
+<p>chattrコマンドを使った、ファイルをロックするアプリを作って見たいと思います。<br>
+chattrはext2,3,4などの拡張ファイル属性を扱うコマンドです。<br>
+参考:【chattr】ファイルの属性を変更する IT Pro,2014/01/21,中島 能和<br>
+<a href="http://itpro.nikkeibp.co.jp/article/COLUMN/20140115/529923/" class="autolink" rel="nofollow noopener" target="_blank">http://itpro.nikkeibp.co.jp/article/COLUMN/20140115/529923/</a></p>
+
+<p>このコマンドにはファイルを削除不能にするという機能があります。この状態を解除できるのもこのコマンドだけなので、ファイルシステムごとフォーマットしない限り、<br>
+ファイルを削除されたり、暗号化されたりすることは失くなります。例え相手がrootでも、です。</p>
+
+<p>欠点:extファイルシステムでないと使えません。大抵のユーザーはSDカードをNTFSやらFAT32やらでフォーマットしているので、外部SDカードには使えないという欠点があります。なので、ほんとにテスト用です。</p>
+
+<h1>
+<span id="使用するjavaのクラス" class="fragment"></span><a href="#%E4%BD%BF%E7%94%A8%E3%81%99%E3%82%8Bjava%E3%81%AE%E3%82%AF%E3%83%A9%E3%82%B9"><i class="fa fa-link"></i></a>使用するJavaのクラス</h1>
+
+<ol>
+<li>java.lang.Runtime</li>
+<li>java.lang.ProcessBuilder</li>
+<li>java.lang.Process</li>
+</ol>
+
+<p>RuntimeクラスまたはProcessBuilderクラスでコマンドを実行→Processクラスで標準入出力や同期を操作という流れで行います。<br>
+(注:Unixプロセス間通信をしたい時、標準のJavaではサポート外ですが、Androidでは実装されています。)<br>
+コマンドの実行を実現するには、2つの方法があります。<br>
+1. <code>su -c</code>でコマンドごとにrootを取得する。<br>
+2. <code>su</code>を実行し、標準入力からコマンドを実行していく。スクリプトを実行できます。一部、こちらでしか動かないコマンドもあります。(例:mount)</p>
+
+<h2>
+<span id="1-su--cでコマンドごとに実行" class="fragment"></span><a href="#1-su--c%E3%81%A7%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%94%E3%81%A8%E3%81%AB%E5%AE%9F%E8%A1%8C"><i class="fa fa-link"></i></a>1. su -cでコマンドごとに実行</h2>
+
+<p>この方法の利点と欠点を見てみましょう。<br>
+利点. コードが簡潔になる。2の方法では、<code>su</code>を実行しその標準入力にコマンドを入力する必要があるので、エラー処理を含め複雑になります。ちょっとだけ書くにはこちらがいいです。また、プロセスの終了=コマンドの終了なので、<code>su</code>にexitコマンドを投げ忘れていつまでも終了しない、という不安から解放されます。<br>
+欠点. コマンド実行ごとにスーパーユーザーリクエストをするので、毎回確認したいユーザーにとっては不便です。 <br>
+Javaのコードはこんな感じです。</p>
+
+<div class="code-frame" data-lang="java"><div class="highlight"><pre><span class="c1">//プロセスを作成</span>
+<span class="nc">String</span><span class="o">[]</span> <span class="n">cmdarray</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span><span class="s">"su"</span><span class="o">,</span> <span class="s">"-c"</span><span class="o">,</span> <span class="s">"echo Hello root!"</span><span class="o">};</span>
+<span class="nc">Runtime</span> <span class="n">runtime</span> <span class="o">=</span> <span class="nc">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">();</span>
+<span class="nc">Process</span> <span class="n">process</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="nc">String</span> <span class="n">output</span><span class="o">;</span>
+<span class="k">try</span> <span class="o">{</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="na">exec</span><span class="o">(</span><span class="n">cmdarray</span><span class="o">);</span>
+    <span class="nc">String</span> <span class="n">str_stdout</span> <span class="o">=</span> <span class="s">""</span><span class="o">;</span>
+    <span class="c1">//標準入力をセット。</span>
+    <span class="nc">BufferedReader</span> <span class="n">read_stdout</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BufferedReader</span><span class="o">(</span><span class="k">new</span> <span class="nc">InputStreamReader</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">()));</span>
+    <span class="k">while</span> <span class="o">((</span><span class="nc">String</span> <span class="n">line</span><span class="o">=</span><span class="n">read_stdout</span><span class="o">.</span><span class="na">readLine</span><span class="o">())!=</span><span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">str_stdout</span> <span class="o">+=</span><span class="n">line</span> <span class="o">+</span> <span class="s">"\n"</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="n">read_stdout</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+<span class="o">}</span>
+
+</pre></div></div>
+
+<h2>
+<span id="2-suの標準入力に送信" class="fragment"></span><a href="#2-su%E3%81%AE%E6%A8%99%E6%BA%96%E5%85%A5%E5%8A%9B%E3%81%AB%E9%80%81%E4%BF%A1"><i class="fa fa-link"></i></a>2. suの標準入力に送信</h2>
+
+<p>こちらは<code>su</code>のプロセスを一つ立てて置けばそのまま再利用が可能になります。exitコマンドを投げ忘れると大変ですが。<br>
+コードはこんな感じです。この辺はAndroidというよりデスクトップのJavaで良くやることなので、コードも豊富にあると思います。<br>
+コマンドをsuの標準入力に入れて実行するごとに改行するだけです。</p>
+
+<div class="code-frame" data-lang="java"><div class="highlight"><pre><span class="nc">String</span><span class="o">[]</span> <span class="n">cmdarray</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span><span class="s">"su"</span><span class="o">};</span>
+<span class="c1">//processを取るところまでは同じなので省略。</span>
+<span class="nc">String</span><span class="o">[]</span> <span class="n">commands</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span><span class="s">"echo a"</span><span class="o">,</span> <span class="s">"exit"</span><span class="o">};</span>
+<span class="nc">DataOutputStream</span> <span class="n">d_out</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DataOutputStream</span><span class="o">(</span><span class="n">process</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">());</span>
+<span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="nl">command:</span><span class="n">commands</span>
+    <span class="o">)</span> <span class="o">{</span>
+    <span class="n">d_out</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">command</span> <span class="o">+</span> <span class="s">"\n"</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></div></div>
+
+<h1>
+<span id="非同期で実行" class="fragment"></span><a href="#%E9%9D%9E%E5%90%8C%E6%9C%9F%E3%81%A7%E5%AE%9F%E8%A1%8C"><i class="fa fa-link"></i></a>非同期で実行</h1>
+
+<p><code>Runtime#exec()</code>を使っているときは元のプロセスが同期されてしまうので、コマンドの実行が終了するまで待機してしまい、フリーズします。<br>
+そこで、非同期で処理を行いたい時は、<code>ProcessBuilder#start()</code>を使いましょう。</p>
+
+<div class="code-frame" data-lang="java"><div class="highlight"><pre><span class="n">process</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ProcessBuilder</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span><span class="s">"su"</span><span class="o">,</span> <span class="s">"-c"</span><span class="o">,</span> <span class="s">"command"</span><span class="o">})).</span><span class="na">start</span><span class="o">();</span>
+</pre></div></div>
+
+<p>Activityを停止させたい処理は多分そんなに無いと思うので、こちらを使うといいと思います。<br>
+(おそらく<code>Runtime#exec()</code>はC言語の<code>system</code>関数、<code>ProcessBuilder#start()</code>は<code>fork</code>関数のラッパーだと思われます。) </p>
+
+<h1>
+<span id="実際に作ってみたアプリ" class="fragment"></span><a href="#%E5%AE%9F%E9%9A%9B%E3%81%AB%E4%BD%9C%E3%81%A3%E3%81%A6%E3%81%BF%E3%81%9F%E3%82%A2%E3%83%97%E3%83%AA"><i class="fa fa-link"></i></a>実際に作ってみたアプリ</h1>
+
+<p>root権限でファイルをロックするだけの簡単なアプリです。<br>
+<a href="https://github.com/matyapiro31/Stopfiledelete" rel="nofollow noopener" target="_blank">ここ</a>で公開しています。<br>
+自作のShellクラスです。環境変数の設定辺りはまだ書いてません。(要らないけど。)</p>
+
+<div class="code-frame" data-lang="java">
+<div class="code-lang"><span class="bold">Shell.java</span></div>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">www</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.BufferedReader</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.DataOutputStream</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Shell</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">String</span> <span class="n">exec_log</span><span class="o">=</span><span class="s">""</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">Process</span> <span class="nf">execShell</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">cmdarray</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Runtime</span> <span class="n">runtime</span> <span class="o">=</span> <span class="nc">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">();</span>
+        <span class="nc">Process</span> <span class="n">process</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">String</span> <span class="n">output</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">process</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="na">exec</span><span class="o">(</span><span class="n">cmdarray</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span> <span class="n">date</span><span class="o">=</span> <span class="k">new</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">();</span>
+        <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">"shell command `"</span> <span class="o">+</span> <span class="n">cmdarray</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">+</span> <span class="s">"` was executed. ("</span> <span class="o">+</span> <span class="n">date</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">")\n"</span><span class="o">;</span>
+        <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">"arguments are"</span><span class="o">;</span>
+        <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">" \'"</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="nl">arg:</span><span class="n">cmdarray</span>
+                <span class="o">)</span> <span class="o">{</span>
+            <span class="n">exec_log</span> <span class="o">+=</span> <span class="n">arg</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">cmdarray</span><span class="o">[</span><span class="mi">0</span><span class="o">])?</span><span class="s">""</span><span class="o">:</span><span class="s">" "</span> <span class="o">+</span> <span class="n">arg</span><span class="o">;</span>
+        <span class="o">}</span> <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">"\'\n"</span><span class="o">;</span>
+        <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">"process is "</span> <span class="o">+</span> <span class="n">process</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span><span class="s">"\n\n"</span><span class="o">;</span>
+
+        <span class="k">return</span> <span class="n">process</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">String</span> <span class="nf">getProcessStdOut</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Process</span> <span class="n">pr</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">str_stdout</span><span class="o">=</span><span class="s">""</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">String</span> <span class="n">line</span><span class="o">;</span>
+            <span class="nc">BufferedReader</span> <span class="n">read_stdout</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BufferedReader</span><span class="o">(</span><span class="k">new</span> <span class="nc">InputStreamReader</span><span class="o">(</span><span class="n">pr</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">()));</span>
+
+            <span class="k">while</span> <span class="o">((</span><span class="n">line</span><span class="o">=</span><span class="n">read_stdout</span><span class="o">.</span><span class="na">readLine</span><span class="o">())!=</span><span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">str_stdout</span> <span class="o">+=</span><span class="n">line</span> <span class="o">+</span> <span class="s">"\n"</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">read_stdout</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">str_stdout</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">String</span> <span class="nf">getProcessStdErr</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Process</span> <span class="n">pr</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">str_stderr</span><span class="o">=</span><span class="s">""</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">String</span> <span class="n">line</span><span class="o">;</span>
+            <span class="nc">BufferedReader</span> <span class="n">read_stderr</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BufferedReader</span><span class="o">(</span><span class="k">new</span> <span class="nc">InputStreamReader</span><span class="o">(</span><span class="n">pr</span><span class="o">.</span><span class="na">getErrorStream</span><span class="o">()));</span>
+
+            <span class="k">while</span> <span class="o">((</span><span class="n">line</span><span class="o">=</span><span class="n">read_stderr</span><span class="o">.</span><span class="na">readLine</span><span class="o">())!=</span><span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">str_stderr</span> <span class="o">+=</span><span class="n">line</span> <span class="o">+</span> <span class="s">"\n"</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">read_stderr</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">str_stderr</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">setProcessStdIn</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Process</span> <span class="n">pr</span><span class="o">,</span><span class="nc">String</span><span class="o">[]</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">DataOutputStream</span> <span class="n">d_out</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DataOutputStream</span><span class="o">(</span><span class="n">pr</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">());</span>
+            <span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="nl">word:</span><span class="n">text</span>
+                    <span class="o">)</span> <span class="o">{</span>
+                <span class="n">d_out</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">word</span><span class="o">+</span><span class="s">"\n"</span><span class="o">);</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span> <span class="n">date</span><span class="o">=</span> <span class="k">new</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">();</span>
+        <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">"Standard input for "</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">" received text. ("</span> <span class="o">+</span> <span class="n">date</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">")\n"</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="nl">word:</span><span class="n">text</span>
+                <span class="o">)</span> <span class="o">{</span>
+            <span class="n">exec_log</span> <span class="o">+=</span> <span class="n">word</span> <span class="o">+</span> <span class="s">"\n"</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">exitProcess</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Process</span> <span class="n">pr</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">pr</span><span class="o">.</span><span class="na">waitFor</span><span class="o">();</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="na">exitValue</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ret</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="mh">0x10</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="n">pr</span><span class="o">.</span><span class="na">destroy</span><span class="o">();</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">exec_log</span> <span class="o">+=</span> <span class="s">"process "</span> <span class="o">+</span> <span class="n">pr</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">" is exited. ("</span> <span class="o">+</span> <span class="k">new</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">().</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">")\n\n"</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</pre></div>
+</div>
+
+<h2>
+<span id="シェル関数を使う" class="fragment"></span><a href="#%E3%82%B7%E3%82%A7%E3%83%AB%E9%96%A2%E6%95%B0%E3%82%92%E4%BD%BF%E3%81%86"><i class="fa fa-link"></i></a>シェル関数を使う</h2>
+
+<p>シェル関数はシェルスクリプトのコマンドを纏めるために非常に役に立ちます。<br>
+いちいちこれをJavaで書いていたら色々と大変なので、アプリ専用のディレクトリにシェル関数を展開しました。<br>
+まず、mkshrcというファイルを作成し、res/rawに配置しましょう。<br>
+こんな感じで。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="k">function </span>fullname<span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">[</span> <span class="o">!</span> <span class="nt">-e</span> <span class="nv">$1</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+            </span><span class="nb">echo </span>No such file or directory. <span class="o">&gt;</span>&amp;2
+            <span class="k">return </span>1
+        <span class="k">else
+            if</span> <span class="o">[</span> <span class="nt">-f</span> <span class="nv">$1</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+                </span><span class="nb">echo</span> <span class="si">$(</span><span class="nb">cd</span> <span class="si">$(</span><span class="nb">dirname</span> <span class="nv">$1</span><span class="si">)</span><span class="o">&amp;&amp;</span><span class="nb">pwd</span><span class="si">)</span>/<span class="si">$(</span><span class="nb">basename</span> <span class="nv">$1</span><span class="si">)</span>| <span class="se">\</span>
+                <span class="nb">sed</span> <span class="nt">-e</span> <span class="s1">'s/\/\{2,\}/\//g'</span>
+            <span class="k">elif</span> <span class="o">[</span> <span class="nt">-d</span> <span class="nv">$1</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+                </span><span class="nb">echo</span> <span class="si">$(</span><span class="nb">cd</span> <span class="nv">$1</span> <span class="o">&amp;&amp;</span><span class="nb">pwd</span><span class="si">)</span>| <span class="se">\</span>
+                <span class="nb">sed</span> <span class="nt">-e</span> <span class="s1">'s/\/\{2,\}/\//g'</span>
+            <span class="k">fi
+            return </span>0
+        <span class="k">fi</span>
+<span class="o">}</span>
+<span class="k">function </span>list_files<span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">[</span> <span class="si">$(</span>fullname <span class="nv">$1</span><span class="si">)</span> <span class="o">!=</span> <span class="s2">"/"</span> <span class="o">]</span><span class="p">;</span><span class="k">then
+        </span><span class="nb">echo</span> ../
+    <span class="k">fi
+    </span>busybox <span class="nb">ls</span> <span class="nt">-1ap</span> <span class="nv">$1</span>|tail <span class="nt">-n</span> +3
+<span class="o">}</span>
+</pre></div></div>
+
+<p>今回はroot権限でないと見られないディレクトリの中身を覗くために使用しました。<br>
+このファイルを展開するには、</p>
+
+<div class="code-frame" data-lang="java"><div class="highlight"><pre> <span class="nc">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getResources</span><span class="o">().</span><span class="na">openRawResource</span><span class="o">(</span><span class="no">R</span><span class="o">.</span><span class="na">raw</span><span class="o">.</span><span class="na">mkshrc</span><span class="o">);</span>
+<span class="c1">//ファイルのサイズまたはそれ以上の数値を設定。</span>
+ <span class="kt">byte</span><span class="o">[]</span> <span class="n">binary</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">2048</span><span class="o">];</span>
+ <span class="k">try</span> <span class="o">{</span>
+     <span class="n">is</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">binary</span><span class="o">);</span>
+     <span class="n">openFileOutput</span><span class="o">(</span><span class="s">".mkshrc"</span><span class="o">,</span> <span class="no">MODE_PRIVATE</span><span class="o">).</span><span class="na">write</span><span class="o">(</span><span class="n">binary</span><span class="o">);</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div></div>
+
+<p>とこのようにやりました。これでリソースからファイルを出力できます。<br>
+シェル関数を使うには同一プロセス内で先に<code>source</code>コマンドを実行して関数を読み込んでおく必要があります。</p>
+
+<h1>
+<span id="おまけ---その1-chrootコマンドで普通のlinux環境を作る" class="fragment"></span><a href="#%E3%81%8A%E3%81%BE%E3%81%91---%E3%81%9D%E3%81%AE1-chroot%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%A7%E6%99%AE%E9%80%9A%E3%81%AElinux%E7%92%B0%E5%A2%83%E3%82%92%E4%BD%9C%E3%82%8B"><i class="fa fa-link"></i></a>おまけ - その1 chrootコマンドで普通のLinux環境を作る</h1>
+
+<p>Androidではアプリは<code>/data/data/</code>以下の専用のディレクトリが与えられています。<br>
+ここにchrootのための専用のディレクトリを作成しましょう。いくつかのディレクトリをマウントする必要があります。</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">一例</span></div>
+<div class="highlight"><pre><span class="nb">mkdir chroot
+cd chroot
+mkdir </span>system
+<span class="nb">mkdir </span>dev
+<span class="nb">mkdir </span>proc
+mount <span class="nt">-o</span> <span class="nb">bind</span> /system ./system
+mount <span class="nt">-o</span> <span class="nb">bind</span> /dev ./dev
+mount <span class="nt">-o</span> <span class="nb">bind</span> /proc ./proc
+<span class="nb">chroot</span> <span class="nb">.</span> /system/bin/sh
+</pre></div>
+</div>
+
+<p>chrootすることでいちいち<code>/system</code>や<code>/</code>を書き込み可能なようにマウントし直す必要が失くなります。また、アンインストールした後にゴミが残ることがなくなります。<br>
+chroot環境はdebootstrapで構築するのがおすすめです。<br>
+prootやfakechrootを使えば非rootでもchroot出来ます。<br>
+参考: <a href="https://wiki.debian.org/ChrootOnAndroid" rel="nofollow noopener" target="_blank">ChrootOnAndroid</a> Debian Wiki<br>
+prootのARM Android向けのバイナリはDebian no rootのデータの中にあります。</p>
+
+<h1>
+<span id="おまけ---その2-ケーパビリティを使ってアクセス権限を制限する-実験中" class="fragment"></span><a href="#%E3%81%8A%E3%81%BE%E3%81%91---%E3%81%9D%E3%81%AE2-%E3%82%B1%E3%83%BC%E3%83%91%E3%83%93%E3%83%AA%E3%83%86%E3%82%A3%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E6%A8%A9%E9%99%90%E3%82%92%E5%88%B6%E9%99%90%E3%81%99%E3%82%8B-%E5%AE%9F%E9%A8%93%E4%B8%AD"><i class="fa fa-link"></i></a>おまけ - その2 ケーパビリティを使ってアクセス権限を制限する (実験中)</h1>
+
+<p>ケーパビリティはややこしいですが、少しだけ特殊な権限を与えるというものです。<br>
+<a href="http://www.usupi.org/sysad/183.html" rel="nofollow noopener" target="_blank">参考</a><br>
+ケーパビリティも拡張属性の一種と言えます。<br>
+<code>setcap</code>コマンドを使って一度<em><code>CAP_SYS_CHROOT</code></em>をchrootコマンドに当てれば次回からroot無しでchroot出来ます。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre> su <span class="nt">-c</span> <span class="s2">"setcap cap_sys_chroot=ep /system/sbin/chroot"</span>
+<span class="c">#su無しでchroot出来てしまう</span>
+<span class="nb">chroot</span>
+</pre></div></div>
+
+<p>他にもlsに<em><code>CAP_DAC_READ_SEARCH</code></em>を与えることでどんなディレクトリでも閲覧できるようになるという恐ろしいこともできます。<br>
+しかし、カーネルのバージョンによってはケーパビリティがサポートされていない場合があります。<br>
+便利ですが、なんかやってみてダメだったので、もしかしたらAndroidだとうまく行かないかもしれません。</p>
+
+<h1>
+<span id="おまけ---その3-他のアプリが実行したコマンドの詳細を調べる" class="fragment"></span><a href="#%E3%81%8A%E3%81%BE%E3%81%91---%E3%81%9D%E3%81%AE3-%E4%BB%96%E3%81%AE%E3%82%A2%E3%83%97%E3%83%AA%E3%81%8C%E5%AE%9F%E8%A1%8C%E3%81%97%E3%81%9F%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E8%A9%B3%E7%B4%B0%E3%82%92%E8%AA%BF%E3%81%B9%E3%82%8B"><i class="fa fa-link"></i></a>おまけ - その3 他のアプリが実行したコマンドの詳細を調べる</h1>
+
+<p>root権限があれば、/proc/&lt;process id&gt;/cmdlineを閲覧することによって他のアプリがどのような操作をしているのかを知ることが出来ます。<br>
+プロセス番号を調べるには<code>ps</code>コマンドを使いましょう。<br>
+アプリのパッケージ名を調べておき、そのパッケージ名のPIDが親プロセスID(PPID)となっているプロセスを調べるのがいいでしょう。<br>
+コマンドの引数の区切り文字は\0ですが、Androidの通常のsedでは\0を置換できないのでちょっとシェルスクリプトでは難しいと思います。</p>

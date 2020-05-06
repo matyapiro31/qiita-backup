@@ -1,0 +1,39 @@
+<p>最近JSONを始めまして、Qiitaに投稿していらっしゃる諸兄には及びませんが、JSONについていろいろ書いてみます。</p>
+
+<h1>
+<span id="jsonはjavascriptの一変数である" class="fragment"></span><a href="#json%E3%81%AFjavascript%E3%81%AE%E4%B8%80%E5%A4%89%E6%95%B0%E3%81%A7%E3%81%82%E3%82%8B"><i class="fa fa-link"></i></a>JSONはJavaScriptの一変数である</h1>
+
+<p>JSONはJavaScriptの変数のデータ構造をそのままファイルに書いただけです。<br>
+そのためJSONにはコメントなどの構文がありませんが、JavaScriptで簡単に読み込めます。</p>
+
+<h1>
+<span id="jsonはpythonと文法がほとんど一致している" class="fragment"></span><a href="#json%E3%81%AFpython%E3%81%A8%E6%96%87%E6%B3%95%E3%81%8C%E3%81%BB%E3%81%A8%E3%82%93%E3%81%A9%E4%B8%80%E8%87%B4%E3%81%97%E3%81%A6%E3%81%84%E3%82%8B"><i class="fa fa-link"></i></a>JSONはPythonと文法がほとんど一致している</h1>
+
+<p>まずはディクショナリ型を見てみましょう。Pythonは<br>
+<code>#Pythonの構文<br>
+a = {"foo":'bar',}<br>
+</code><br>
+次にJavaScript/JSON<br>
+<code>{"hello":"world"}</code><br>
+最後にカンマを付けられるのが、PythonですがJSONではそれができません。またJSONはシングルクォーテーションでは囲めません。<br>
+次にリスト型を見てみましょう。Pythonは<br>
+<code>a=[2,3,4,"abc",3.14e+2,]</code><br>
+次にJSONでは<br>
+<code>[1,2,"def",2.71828182846e+5]</code><br>
+同じ表現でできます。<br>
+エスケープ文字について見てみましょう。<br>
+Pythonの方が多いですが、JSONにあるものはそのまま通用します。大体エスケープシーケンスが全く違うのはVBかXMLぐらいです。Cの流れを汲んでいる言語はほぼ同じです。<br>
+次に変数の型についてです。<br>
+整数型や浮動小数点型は同じようにサポートされていますが、真理値型だけは違います。<br>
+JSONではtrue/falseと小文字ですが、PythonではTrue,Falseと大文字です。<br>
+不定値についてはJSONはnullですが、PythonはNoneです。</p>
+
+<h1>
+<span id="まとめ" class="fragment"></span><a href="#%E3%81%BE%E3%81%A8%E3%82%81"><i class="fa fa-link"></i></a>まとめ</h1>
+
+<p>true,false,nullを使わなければJSONはそのままPythonのデータとして通用します。先頭行に<br>
+<code>#!/usr/bin/python<br>
+</code><code>#coding:utf-8<br>
+true = True;false = False;null = None;<br>
+hoge = \</code><br>
+などと加えれば立派なPythonです。</p>

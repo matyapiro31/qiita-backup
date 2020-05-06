@@ -1,0 +1,53 @@
+
+<h1>
+<span id="リダイレクトとして利用できるコマンドtee" class="fragment"></span><a href="#%E3%83%AA%E3%83%80%E3%82%A4%E3%83%AC%E3%82%AF%E3%83%88%E3%81%A8%E3%81%97%E3%81%A6%E5%88%A9%E7%94%A8%E3%81%A7%E3%81%8D%E3%82%8B%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89tee"><i class="fa fa-link"></i></a>リダイレクトとして利用できるコマンドtee</h1>
+
+<p>teeはリダイレクトの代用として利用できます。</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">tee_test.sh</span></div>
+<div class="highlight"><pre><span class="c">#1 上書き</span>
+<span class="nb">echo test</span><span class="o">&gt;</span>file
+<span class="nb">echo test</span>|tee file
+<span class="c">#2 追加書き込み</span>
+<span class="nb">echo test</span><span class="o">&gt;&gt;</span>file
+<span class="nb">echo test</span>|tee file <span class="nt">-a</span>
+<span class="c">#3 そのまま標準出力に出力</span>
+<span class="nb">echo test</span>
+<span class="c">#二重になる</span>
+<span class="nb">echo test</span>|tee -
+<span class="c">#正解</span>
+<span class="nb">echo test</span>|tee /dev/null
+</pre></div>
+</div>
+
+<h2>
+<span id="teeを使うポイント" class="fragment"></span><a href="#tee%E3%82%92%E4%BD%BF%E3%81%86%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88"><i class="fa fa-link"></i></a>teeを使うポイント</h2>
+
+<ol>
+<li>teeなら標準出力とファイルの両方に同時出力できる。</li>
+<li>標準エラー出力をフィルタできる。</li>
+<li>標準機能ではなくコマンドなのでエイリアスなどが可能。Windowsだと出力文字コードを変換するなど。</li>
+<li>echoのようなbash組み込み関数に<code>sudo</code>コマンドでroot権限を取れる。</li>
+<li>コマンドなので無いかもしれないし、遅い。</li>
+</ol>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">tee_vs_redirect.sh</span></div>
+<div class="highlight"><pre><span class="c">#2 hogeというファイルはないとする</span>
+<span class="nb">cat </span>hoge 1&gt;log
+<span class="nb">cat </span>hoge|tee log
+<span class="c">#3 Shift-JISに変換する。リダイレクトは無理。</span>
+<span class="nb">alias tee</span><span class="o">=</span><span class="s1">'nkf -s|tee'</span>
+<span class="nb">echo</span> <span class="s2">"ほげ"</span>|tee
+<span class="c">#4 /etc/apt/sources.listに書き込み</span>
+<span class="nb">sudo </span>bash <span class="nt">-c</span> <span class="s2">"echo </span><span class="se">\"</span><span class="s2">deb http://example.com/ latest main</span><span class="se">\"</span><span class="s2">&gt;&gt;/etc/apt/sources.list"</span>
+<span class="nb">echo</span> <span class="s2">"deb http://example.com/ latest main"</span>|sudo <span class="nb">tee</span> <span class="nt">-a</span> /etc/apt/sources.list
+<span class="c">#5 例えばAndroidとか</span>
+<span class="nb">tee</span>
+<span class="c">#エラーになる</span>
+</pre></div>
+</div>
+
+<p>どれだけ遅いのか試してみると、teeだと8秒、リダイレクトだと3秒でした。<br>
+二倍以上違うので、そうやたらと使ったり、容量の大きいファイルの処理には向かないかもしれません。</p>

@@ -1,0 +1,44 @@
+
+<h1>
+<span id="初めに" class="fragment"></span><a href="#%E5%88%9D%E3%82%81%E3%81%AB"><i class="fa fa-link"></i></a>初めに</h1>
+
+<p>QiitaはマークダウンだけでなくHTMLも使うことができます。しかし<br>
+<code>&lt;element style="style"&gt;</code><br>
+のように<code>style</code>属性を設定しても無視されるので、スタイルを用いた強調などは出来ませんでした。<br>
+しかし、<code>class</code>属性や<code>id</code>属性などを使えば彩色やサイズ変更などが可能になることが分かりました。<br>
+そこでQiitaのCSSをダウンロードし、様々なスタイルを試してみました。</p>
+
+<h1>
+<span id="スタイルの一例" class="fragment"></span><a href="#%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB%E3%81%AE%E4%B8%80%E4%BE%8B"><i class="fa fa-link"></i></a>スタイルの一例</h1>
+
+<div class=""><div class=""><p class="">abdefg</p></div></div>
+
+<p class="">
+<a>abcdefg</a>
+</p>
+
+<p class="">abcdefg</p>
+
+<p class=""><a class="">abcdefg</a></p>
+
+<p class="">abcdefg</p>
+
+<p class="">abcdegh</p>
+
+<p class="">abcdegh</p>
+
+<div class=""><div class=""><em>abdefg</em></div></div> 
+
+<p>そしてコードはこれです。</p>
+
+<div class="code-frame" data-lang="html"><div class="highlight"><pre><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"markdownContent"</span><span class="nt">&gt;&lt;div</span> <span class="na">class=</span><span class="s">"highlight"</span><span class="nt">&gt;&lt;p</span> <span class="na">class=</span><span class="s">"ne"</span><span class="nt">&gt;</span>abdefg<span class="nt">&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;</span>
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"adventCalendarBreadcrumb"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;a&gt;</span>abcdefg<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"fa-check-circle-o"</span><span class="nt">&gt;</span>abcdefg<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"btn-primary"</span><span class="nt">&gt;&lt;a</span> <span class="na">class=</span><span class="s">"badge"</span><span class="nt">&gt;</span>abcdefg<span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"fa-comment-o"</span><span class="nt">&gt;</span>abcdefg<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"editorMarkdown_tab"</span><span class="nt">&gt;</span>abcdegh<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"sharedHeader-public"</span><span class="nt">&gt;</span>abcdegh<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"markdownContent"</span><span class="nt">&gt;&lt;div</span> <span class="na">class=</span><span class="s">"highlight small"</span><span class="nt">&gt;&lt;em</span> <span class="na">class=</span><span class="s">"small ne newUserPageProfile_fullName"</span><span class="nt">&gt;</span>abdefg<span class="nt">&lt;/em&gt;&lt;/div&gt;&lt;/div&gt;</span> 
+</pre></div></div>

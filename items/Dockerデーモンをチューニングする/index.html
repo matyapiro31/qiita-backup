@@ -1,0 +1,119 @@
+<p>この記事は<a href="http://qiita.com/advent-calendar/2016/docker">Docker Advent Calendar 2016</a> の14日目です。<br>
+Dockerは最近インストールできなかったりして試せなかったのですが、一昨日にようやく復活させられました。</p>
+
+<p>注意: 以下は個人で検証した内容です。あんまり正しいという保証はできません。</p>
+
+<ul>
+<li>検証はUbuntu 16.0.4.1 LTSで行いました。そのためCentOSやUpstartを使う14.04などは違うコマンド・ファイルの参照が必要かもしれません。</li>
+<li>Dockerのバージョンは1.12.3です。</li>
+</ul>
+
+<h1>
+<span id="dockerdをいじるために一旦止める" class="fragment"></span><a href="#dockerd%E3%82%92%E3%81%84%E3%81%98%E3%82%8B%E3%81%9F%E3%82%81%E3%81%AB%E4%B8%80%E6%97%A6%E6%AD%A2%E3%82%81%E3%82%8B"><i class="fa fa-link"></i></a>dockerdをいじるために一旦止める</h1>
+
+<p>dockerのサービスを止めます。<br>
+<code>sudo service docker stop</code></p>
+
+<h1>
+<span id="1-dockerをtcpで動かしインターネット上からアクセスする" class="fragment"></span><a href="#1-docker%E3%82%92tcp%E3%81%A7%E5%8B%95%E3%81%8B%E3%81%97%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%8D%E3%83%83%E3%83%88%E4%B8%8A%E3%81%8B%E3%82%89%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>1. Dockerをtcpで動かし、インターネット上からアクセスする</h1>
+
+<p><code>-H</code> オプション : 接続するソケットを指定する<br>
+-Hオプションはunixドメインソケット、systemdソケット及びtcpソケットに対応しています。<br>
+リモートでの接続を行う場合、tcpを用います。tcpを用いる場合、dockerは2375番で平文、2376番ポートでTLSを用いて通信するのが慣例です。<br>
+ただし、既定のDockerデーモンの設定には暗号化機能はありません。そのため、暗号化通信を行うにはCA証明書を自前で用意することが必要です。<br>
+<code>sudo dockerd -H tcp://0.0.0.0:2375</code> - 2375番ポートで通信する場合<br>
+この場合、dockerクライアントは<br>
+<code>docker -H tcp://0.0.0.0:2375</code>で接続できます。</p>
+
+<h1>
+<span id="2-デーモンを止めたままでもコンテナを実行可能にする" class="fragment"></span><a href="#2-%E3%83%87%E3%83%BC%E3%83%A2%E3%83%B3%E3%82%92%E6%AD%A2%E3%82%81%E3%81%9F%E3%81%BE%E3%81%BE%E3%81%A7%E3%82%82%E3%82%B3%E3%83%B3%E3%83%86%E3%83%8A%E3%82%92%E5%AE%9F%E8%A1%8C%E5%8F%AF%E8%83%BD%E3%81%AB%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>2. デーモンを止めたままでもコンテナを実行可能にする</h1>
+
+<p><code>--live-restore</code> - デーモンを停止してもコンテナが実行されるようになる<br>
+dockerのコンテナは連続稼働が求められることが多いですが、アップデートの際などはどうしてもデーモンを再起動させなければいけません。<br>
+そんなときのためにデーモンを止めたままでもコンテナを稼働させるオプションが<code>--live-restore</code>です。<br>
+このオプションはバージョン 1.12からサポートされていますが、なんかやってみても止まったりしました。(異常終了だと効果がない?)</p>
+
+<h1>
+<span id="3-イメージの同時ダウンロードアップロード数を増やす" class="fragment"></span><a href="#3-%E3%82%A4%E3%83%A1%E3%83%BC%E3%82%B8%E3%81%AE%E5%90%8C%E6%99%82%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%82%A2%E3%83%83%E3%83%97%E3%83%AD%E3%83%BC%E3%83%89%E6%95%B0%E3%82%92%E5%A2%97%E3%82%84%E3%81%99"><i class="fa fa-link"></i></a>3. イメージの同時ダウンロード/アップロード数を増やす</h1>
+
+<p><code>--max-concurrent-downloads=3</code> - pull ごとの最大同時ダウンロード数を指定<br>
+<code>--max-concurrent-uploads=5</code> - push ごとの最大同時アップロード数を指定<br>
+archlinuxのイメージで試してみた結果、どうも同時ダウンロード数は少ない方が単独のダウンロードでは速いという結果でした。</p>
+
+<h1>
+<span id="4-使用するストレージドライバの選択" class="fragment"></span><a href="#4-%E4%BD%BF%E7%94%A8%E3%81%99%E3%82%8B%E3%82%B9%E3%83%88%E3%83%AC%E3%83%BC%E3%82%B8%E3%83%89%E3%83%A9%E3%82%A4%E3%83%90%E3%81%AE%E9%81%B8%E6%8A%9E"><i class="fa fa-link"></i></a>4. 使用するストレージドライバの選択</h1>
+
+<p><code>-s <em>driver</em></code> ストレージドライバ(イメージのレイヤ表現のためのドライバ)<br>
+Linuxのストレージドライバを選択することができます｡基本的にはどのOSにも1つしかストレージドライバは使われていないようですが､<br>
+あなたがDockerを使っているということは多分ストレージドライバを一つしか持っていないか､Dockerデーモンを設定した経験があるかのどちらかであると思います｡なぜなら､ストレージドライバが2つ以上あるときにはDockerデーモンはこのオプションを設定しなければ動かないからです｡多分これは仕様ですが､欠陥ですね｡<br>
+使用できるドライバは設定していないならば一種類しかないと思いますが､調べ方は<br>
+<code>docker info</code>コマンドで三行目に<br>
+<code>Storage Driver: devicemapper</code><br>
+という感じで表示されます｡<br>
+サポートされているのはaufs, devicemapper, btrfs, zfs, overlay, overlay2 です｡vfsもデバッグ用途では使えるそうな｡<br>
+Dockerとしてはoverlay2が一番パフォーマンスを出せるようですが､Linuxカーネル4.0以上でしかサポートされない上､まだ不安定であるとしています｡zfs, btrfsはそれぞれのファイルシステムでしか使えないので､aufs, devicemapper, overlayの3つを使いこなすのが良いのではないでしょうか｡</p>
+
+<h2>
+<span id="devicemapper" class="fragment"></span><a href="#devicemapper"><i class="fa fa-link"></i></a>devicemapper</h2>
+
+<ul>
+<li>RHEL/CentOS/Fedora</li>
+<li>Ubuntu 12.04</li>
+<li>Ubuntu 14.04</li>
+<li>Debian</li>
+</ul>
+
+<p>において既定のドライバであるため､導入は不要です｡<br>
+欠点としては次の2点が挙げられています｡<br>
+1. 32KiB以下のファイルへの書き込みパフォーマンスとしてはaufsに劣る<br>
+2. メモリの使用効率は最悪</p>
+
+<h2>
+<span id="aufs" class="fragment"></span><a href="#aufs"><i class="fa fa-link"></i></a>aufs</h2>
+
+<p>aufsの導入方法は書かれていませんでしたが､導入されているかどうかは<br>
+<code>grep aufs /proc/filesystems</code><br>
+で調べることができます｡<br>
+aufsには次の利点と欠点があるそうです｡</p>
+
+<ol>
+<li>書き込み速度が遅い｡(特に大きいファイル) これは実感しました｡</li>
+<li>データサイズの最小化および起動時間の短縮｡一番データサイズが最小化するのはaufsだそうです｡</li>
+</ol>
+
+<h2>
+<span id="overlayoverlay2" class="fragment"></span><a href="#overlayoverlay2"><i class="fa fa-link"></i></a>overlay/overlay2</h2>
+
+<p>btrfs,aufs overlay,overlay2,zfs,eCryptfsを用いたファイルシステムでは使えないそうです｡つまり､extとxfs専用ですね｡<br>
+overlayはカーネル3.18以上でサポートされています｡しかし､使えるかどうかの条件はいまいち不明なので､実験はできませんでした｡</p>
+
+<h1>
+<span id="tlsで使う証明書を指定する" class="fragment"></span><a href="#tls%E3%81%A7%E4%BD%BF%E3%81%86%E8%A8%BC%E6%98%8E%E6%9B%B8%E3%82%92%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>tlsで使う証明書を指定する</h1>
+
+<p>クライアント側でも<code>--tlsverify</code>を用いる必要があります｡<br>
+デーモンでは<br>
+<code>--tls</code> - TLSを使用、--tlsverify を含む<br>
+<code>--tlscacert="/etc/docker/ca.pem"</code> - この CA で署名された証明書のみ信頼<br>
+<code>--tlscert="/etc/docker/cert.pem"</code> - TLS 証明書ファイルのパス<br>
+<code>--tlskey="/etcdocker/key.pem"</code> - TLS 鍵ファイルのパス<br>
+の3つを使用し､<code>-H</code>オプションでtcpを使用することでtlsによる暗号化通信ができるようになります｡<br>
+CA証明書の保存場所は/etc/dockerが良いでしょう｡(dockerdの権限は完全なrootではないため)</p>
+
+<h1>
+<span id="ユーザ名前空間を使う" class="fragment"></span><a href="#%E3%83%A6%E3%83%BC%E3%82%B6%E5%90%8D%E5%89%8D%E7%A9%BA%E9%96%93%E3%82%92%E4%BD%BF%E3%81%86"><i class="fa fa-link"></i></a>ユーザ名前空間を使う</h1>
+
+<p><code>--user-remap="nobody:docker"</code> ユーザをnobodyに､グループをdockerに設定する<br>
+Dockerの1.12までは名前空間のサポートがないため､rootユーザ以外の一般ユーザが<code>sudo</code>なしで使用することは事実上重大な脆弱性となり得るため､推奨されていませんでした｡しかし､このユーザ名前空間のサポートにより､コンテナ内のuid/gidをホストから分離することが可能になりました｡ただし､これによって<code>--privileged</code>を付けてコンテナを動作させることができなくなり､<code>mount</code>などのコマンドがコンテナ内で使用不可になったりします｡</p>
+
+<h1>
+<span id="設定をファイルに保存する" class="fragment"></span><a href="#%E8%A8%AD%E5%AE%9A%E3%82%92%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%AB%E4%BF%9D%E5%AD%98%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>設定をファイルに保存する</h1>
+
+<p>dockerデーモンの設定は/etc/docker/daemon.jsonファイルに書き込むことで常時反映させることができます｡<br>
+/etc/docker/daemon.jsonのテンプレートは<a href="https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file" class="autolink" rel="nofollow noopener" target="_blank">https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file</a> にあります｡<br>
+参考:</p>
+
+<ol>
+<li><a href="//docs.docker.com/engine/reference/commandline/dockerd/#/storage-driver-options" rel="nofollow noopener" target="_blank">dockerd</a></li>
+<li><a href="//docs.docker.jp/engine/userguide/storagedriver/device-mapper-driver.html" rel="nofollow noopener" target="_blank">Device Mapper ストレージ・ドライバの使用</a></li>
+<li><a href="//docs.docker.jp/engine/userguide/storagedriver/selectadriver.html" rel="nofollow noopener" target="_blank">ストレージ・ドライバの選択</a></li>
+</ol>

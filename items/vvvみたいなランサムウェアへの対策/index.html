@@ -1,0 +1,94 @@
+
+<h1>
+<span id="アクセス権限を与えない" class="fragment"></span><a href="#%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E6%A8%A9%E9%99%90%E3%82%92%E4%B8%8E%E3%81%88%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>アクセス権限を与えない</h1>
+
+<p>Unixであれば<code>sudo -u nobody コマンド</code>,Windowsであれば<code>runas /user:Hoge コマンド</code> (Hogeはグループポリシーなどによって制限済みのテスト用アカウント)<br>
+などで制限アカウントに変身し、自分のユーザーディレクトリ書き込み権限を与え無いようにしてブラウザを実行させましょう。<br>
+これによってもしもブラウザがFlashなどの脆弱性でファイルを勝手にダウンロード&amp;実行しても被害に遭うのはその制限アカウントのフォルダ内だけです。<br>
+あまり信用のできないソフトウェアはそもそも実行しないのが常道ですが、もしも信頼していたソフトウェアがサイトが乗っ取られてマルウェアにすり替えられている場合なども考えられます。このような場合も同様です。</p>
+
+<h2>
+<span id="windowsでの変身" class="fragment"></span><a href="#windows%E3%81%A7%E3%81%AE%E5%A4%89%E8%BA%AB"><i class="fa fa-link"></i></a>Windowsでの変身</h2>
+
+<p>Windowsで一時的に他のユーザとして実行するには、<code>runas</code>コマンドを使用する他には、Shift+右クリックメニューで「別のユーザーとして実行」を選択するという手段があります。これもそれなりにいいのですが、コマンドラインなどで使うには使い勝手が悪いです。そこでC#を使うことにします。<br>
+Process.Startメソッドにはsudoのように他のユーザーとして実行する手段があります。<br>
+<a href="http://www.atmarkit.co.jp/fdotnet/dotnettips/877processstartuser/processstartuser.html" rel="nofollow noopener" target="_blank">ここ</a>を参考にしていただければいいと思います。 コードはまだ書いてないんですが、Unixみたいな感じで実装するとこういう感じです。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="c">#explorerを他のユーザ権限で動かす。</span>
+<span class="nb">sudo</span> <span class="nt">-u</span> explorer.exe
+</pre></div></div>
+
+<p>Windowsのショートカットでコマンドを編集することでクリック一発でサンドボックスユーザ起動可能になるわけです。<br>
+ただ問題になるのは制限アカウントのパスワードをどうするかです。私は一人で使うので適当なもので問題ないんですが、そのへんはうまくやってください。<br>
+Win32でやるなら<strong>CreateProcessWithLogonW</strong>関数ですかね。</p>
+
+<h2>
+<span id="ファイル属性で変更を防ぐ" class="fragment"></span><a href="#%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%B1%9E%E6%80%A7%E3%81%A7%E5%A4%89%E6%9B%B4%E3%82%92%E9%98%B2%E3%81%90"><i class="fa fa-link"></i></a>ファイル属性で変更を防ぐ</h2>
+
+<p>Linuxにはext3/4でのファイル属性を変更できるchattrコマンドが存在します。<br>
+通常Unixではrootならどんなファイルでも削除できますが、<code>sudo chattr +i</code>を使うと削除も変更できなくなります。<br>
+Windowsだとこんな便利なことはできませんが、ファイルの属性から読み取り専用のディレクトリを作っておき、其のフォルダの中に保存するというのは有効です。<br>
+Windowsのコマンドでも実行可能属性を消去できますが、面倒なのでCygwinなどの<code>chmod</code>を使うのがお勧めです。<br>
+例えばこんなコードを実行するのもいいでしょう。ダウンロードしたファイルは自動的に実行不能になります。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="k">while</span> :
+<span class="k">do
+</span><span class="nb">chmod</span> <span class="nt">-x</span> /cygdrive/c/Users/user/Downloads/<span class="k">*</span>
+<span class="k">done</span>
+</pre></div></div>
+
+<p>実行したいときは別のフォルダに入れて<code>chmod +x</code>で実行可能にしましょう。</p>
+
+<h1>
+<span id="ダウンロードを防ぐ" class="fragment"></span><a href="#%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%82%92%E9%98%B2%E3%81%90"><i class="fa fa-link"></i></a>ダウンロードを防ぐ</h1>
+
+<h2>
+<span id="zero-dayへの対策" class="fragment"></span><a href="#zero-day%E3%81%B8%E3%81%AE%E5%AF%BE%E7%AD%96"><i class="fa fa-link"></i></a>Zero dayへの対策</h2>
+
+<p>WindowsならEMETがあります。Linuxならまあgccに -fstack-protectorを付けたりするとバイナリレベルで対応できます。<br>
+EMETを使えば簡単にデータ実行防止ができます。</p>
+
+<table>
+<tr>
+<th></th>
+<th>Windows</th>
+<th>Linux</th>
+</tr>
+<tr>
+<td>DEP</td>
+<td>EMET</td>
+<td>Exec-Shield</td>
+</tr>
+<tr>
+<td>ASLR</td>
+<td>EMET</td>
+<td>Randomize Va space</td>
+</tr>
+<tr>
+<td>SEHOP</td>
+<td>EMET</td>
+<td>無し?</td>
+</tr>
+</table>
+
+<p>EMETを使えばかなりのZeroday脆弱性に対応できることが知られています。</p>
+
+<h2>
+<span id="flashを使わない" class="fragment"></span><a href="#flash%E3%82%92%E4%BD%BF%E3%82%8F%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>Flashを使わない</h2>
+
+<p>Flashは現在最大のブラウザ脆弱性源です。Flashは最近のコンテンツではほとんどHTML5に置き換えられていますし、そうでないものを閲覧する時でも大抵User-Agentを変えてしまえばスマートフォン用のページで閲覧できます。例えばゲームなど移行できないコンテンツもありますが、そういうゲームをするのであれば、Google ChromeやMS EdgeのようなPPAPIのFlashを使ってください。IEよりかは安全です。</p>
+
+<h2>
+<span id="インターネットに繋がない" class="fragment"></span><a href="#%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%8D%E3%83%83%E3%83%88%E3%81%AB%E7%B9%8B%E3%81%8C%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>インターネットに繋がない</h2>
+
+<p>そもそもインターネットに接続しないという考え方もあります。<br>
+ネットワーク接続をしない別のサンドボックスアカウントを作っておきましょう。</p>
+
+<h1>
+<span id="最悪の場合に備えて" class="fragment"></span><a href="#%E6%9C%80%E6%82%AA%E3%81%AE%E5%A0%B4%E5%90%88%E3%81%AB%E5%82%99%E3%81%88%E3%81%A6"><i class="fa fa-link"></i></a>最悪の場合に備えて</h1>
+
+<p>ハードディスク全体をバックアップして物理的に接続のない外付けなんかに保存しておきましょう。<br>
+こういったマルウェアの中にはtruecryptなどでハードディスク全体を暗号化するものも存在します。<br>
+実行された場合、そういったものには小手先の対策では通じません。<br>
+ハードディスクは外付けだとかなり安いので、買い足しておきましょう。</p>

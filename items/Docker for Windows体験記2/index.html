@@ -1,0 +1,6 @@
+
+<h1>
+<span id="dockerはwindows-10非対応だった" class="fragment"></span><a href="#docker%E3%81%AFwindows-10%E9%9D%9E%E5%AF%BE%E5%BF%9C%E3%81%A0%E3%81%A3%E3%81%9F"><i class="fa fa-link"></i></a>DockerはWindows 10非対応だった...</h1>
+
+<p>DockerはWindows 10 非対応です｡Boot2Dockerを使っても敢え無く失敗してしまいます｡<br>
+原因は知りませんが､うまく仮想マシンを作成できないようです｡実のところ原因はわかりませんが､<code>boot2docker start</code>では失敗します｡どうもうまくsshの共有鍵が渡せないみたいです｡本来起動の際に共有鍵が作成されるんですが､その辺がおかしいようです｡<code>boot2docker delete&amp;&amp;boot2docker init</code>で新しく作成すると今度はboot2docker.isoがストレージに割り当てられていない｡仕方ないので手動で割り当てました｡これでsshでパスワードが分かっていれば<code>boot2docker ssh</code>で接続できます｡パスワードは<strong>tcuser</strong>です｡他にもUNetBootinとかで設定が保存できるようにしようとしたり色々やってみましたがうまくいきませんでした｡ちなみにWindows 10だと標準でsshがPowerShellに入る予定らしいので期待してます｡PowerShellのバージョンもまだ上がってませんからね｡コンテナのデータはどこにどう保存されていたのかわからないですが､保存できないので仕方なくサスペンドさせています｡あとコンテナから抜けるとき間違って連続で<code>exit</code>してしまい､username:docker password:tcuserでログインしたのですが､rootじゃなかったので<code>sudo su</code>でrootに変身しましたが､このコマンドでどうしてrootに成れるのかはほんとに疑問です｡そのままWindows 8のVMを使えばssh接続すれば保存は可能です｡</p>

@@ -1,0 +1,49 @@
+
+<h1>
+<span id="環境変数pathの意味" class="fragment"></span><a href="#%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0path%E3%81%AE%E6%84%8F%E5%91%B3"><i class="fa fa-link"></i></a>環境変数<strong>PATH</strong>の意味</h1>
+
+<p>環境変数である<strong>PATH</strong>はLinuxにおいてコマンドの名前を解決するために使用される環境変数です。ディレクトリのパスが<code>:</code>で区切られている文字列が正体です。これらのディレクトリの中にあるファイル名が参照されます。先にかかれているパスが優先されます。</p>
+
+<h1>
+<span id="armプロセッサ向けのコンパイラを用意する" class="fragment"></span><a href="#arm%E3%83%97%E3%83%AD%E3%82%BB%E3%83%83%E3%82%B5%E5%90%91%E3%81%91%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%A9%E3%82%92%E7%94%A8%E6%84%8F%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>ARMプロセッサ向けのコンパイラを用意する</h1>
+
+<p>ARM向けのコンパイラはAndroid NDKについてくる、<strong>gcc-arm-linux-androideabi</strong>を使うのがいいでしょう。ただしC99のサポートが無いので、C99が必要な人は別のコンパイラを使ってください。<br>
+<a href="https://qiita-user-contents.imgix.net/https%3A%2F%2Fdeveloper.android.com%2Fassets%2Fimages%2Fandroid_logo_ndk.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=3dd39e9845c29d2f7d3b0fd98d58b66e" target="_blank" rel="nofollow noopener"><img src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fdeveloper.android.com%2Fassets%2Fimages%2Fandroid_logo_ndk.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=3dd39e9845c29d2f7d3b0fd98d58b66e" alt="Android" data-canonical-src="https://developer.android.com/assets/images/android_logo_ndk.png" srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fdeveloper.android.com%2Fassets%2Fimages%2Fandroid_logo_ndk.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=ac7cc6b23e7e554141728085f4d476f8 1x" loading="lazy"></a> NDK Downloads | Android Developershttps://developer.android.com/ndk/downloads/index.html<br>
+環境変数PATHに最前位置にgccのあるパスを追加しましょう。gccはarm-linux-androideabi-gccのシンボリックリンクになっています。</p>
+
+<p>コンパイルの際の設定も必要です。</p>
+
+<h1>
+<span id="autotoolsを使っている場合" class="fragment"></span><a href="#autotools%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>autotoolsを使っている場合</h1>
+
+<p>AutoToolsでプラットフォームを設定することでMakefileをAndroid向けにできます。<br>
+<code>$ ./configure --host=arm-linux-androideabi</code><br>
+Androidでroot化しない限り<code>/lib</code>などの場所に共有ライブラリをインストールできなくなるので、すべて静的リンクしてコンパイルします。<br>
+<code>$ make LDFLAGS=--static</code><br>
+fileコマンドで静的にビルドされているかどうか確かめましょう。<br>
+<code>$ file</code><em><code>hoge</code></em><code><br>
+</code><em><code>hoge:</code></em><code>ELF 32-bit LSB  executable, ARM, EABI5 version 1 (SYSV), statically linked, for GNU/Linux 2.6.16, not stripped<br>
+</code><br>
+ここで重要なのは 「<strong>ELF 32-bit LSB  executable, ARM</strong>」と、 「statically linked」です。この2つが揃っていなければAndroidでは動きません。</p>
+
+<h1>
+<span id="gccで直接コンパイルする場合" class="fragment"></span><a href="#gcc%E3%81%A7%E7%9B%B4%E6%8E%A5%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E3%81%99%E3%82%8B%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>gccで直接コンパイルする場合</h1>
+
+<p>PATHを設定した後で<br>
+<code>gcc --static</code><em><code>hoge.c</code></em></p>
+
+<h1>
+<span id="cmakeを利用する場合" class="fragment"></span><a href="#cmake%E3%82%92%E5%88%A9%E7%94%A8%E3%81%99%E3%82%8B%E5%A0%B4%E5%90%88"><i class="fa fa-link"></i></a>CMakeを利用する場合</h1>
+
+<p>静的コンパイルが必要なので、<br>
+SET(CMAKE_EXE_LINKER_FLAGS "-static")<br>
+などを.cmakeファイルなどに入れる。</p>
+
+<h1>
+<span id="chmodで権限を変更できない" class="fragment"></span><a href="#chmod%E3%81%A7%E6%A8%A9%E9%99%90%E3%82%92%E5%A4%89%E6%9B%B4%E3%81%A7%E3%81%8D%E3%81%AA%E3%81%84"><i class="fa fa-link"></i></a>chmodで権限を変更できない!?</h1>
+
+<p>既にBusyboxをインストールされている方は、ビルドしたアプリをchmodで実行可能にできないことに気が付くでしょう。何故かは分かりませんが、chmodできるディレクトリとそうでないディレクトリがあるようです。もっともこれは私のLinuxの権限についての知識が不足しているせいです。実行できるディレクトリとは、/data/data以下のBusyboxアプリ用のデータディレクトリです。ここにインストールすればファイルを実行できるようですね。私はbusyboxのディレクトリにすべてのファイルを入れています。<br>
+追記:どうもシステムメモリとユーザーメモリというメモリ領域の区分が存在し、システム領域にインストールにしなければ実行権限は付けられないみたいです。<br>
+あとどうやらarmel向けにビルドすればいいだけのようです。</p>
+
+<p>関連:<a href="http://qiita.com/matyapiro31/items/00caf525ee65f070647f" id="reference-adb0c55fd436c150d7aa">非Rootでbusyboxを利用する方法</a></p>

@@ -1,0 +1,17 @@
+
+<h1>
+<span id="絵文字を表示するには" class="fragment"></span><a href="#%E7%B5%B5%E6%96%87%E5%AD%97%E3%82%92%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B%E3%81%AB%E3%81%AF"><i class="fa fa-link"></i></a>絵文字を表示するには</h1>
+
+<p>通常の絵文字の表示は<code>ttf-ancient-fonts</code>パッケージのインストールで解決します。</p>
+
+<p>しかし、国旗の絵文字などはUbuntuの標準リポジトリには含まれていません。そこでサードパーティリポジトリをインストールする必要があります。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nb">sudo </span>apt-add-repository ppa:eosrei/fonts
+<span class="nb">sudo </span>apt-get update
+<span class="c"># Choose one!</span>
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>fonts-emojione-svginot
+<span class="c"># Or</span>
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>fonts-twemoji-svginot
+</pre></div></div>
+
+<p>参考: <a href="http://askubuntu.com/questions/639552/how-to-get-apple-color-emojis-to-work-on-ubuntu/740649#740649" class="autolink" rel="nofollow noopener" target="_blank">http://askubuntu.com/questions/639552/how-to-get-apple-color-emojis-to-work-on-ubuntu/740649#740649</a></p>

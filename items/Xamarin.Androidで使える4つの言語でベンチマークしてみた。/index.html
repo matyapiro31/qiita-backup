@@ -1,0 +1,154 @@
+<p>このうちValaについては知らない人も多いと思いますが、「C言語に」コンパイルするオブジェクト指向というかほぼC#みたいな言語です。<br>
+文字通りコンパイル先がC言語であり、MonoのライブラリのGtk#は元々Valaのためのものですから、そういう意味でXamarinとは親和性が高いと言えます。<br>
+ベンチマークの方法としてはフィボナッチ数列を利用しました。できる限り似たような方法で行っていますが、C言語だけ何故か実行時間の数値が微妙です。どれも実行時間がばらつくのはUnix Timeを使っているからですね。そのため最大1秒からほぼ0秒まで実行時間がばらけますが、同じようなコードということで多めに見てください。まずはコードを見てみましょう。殆ど同じコードです。特に変数の宣言やdo~whileの中などですね。配列にしていないのは配列の要素のアクセスとか宣言は微妙に異なるからでしょうか。</p>
+
+<h1>
+<span id="vala" class="fragment"></span><a href="#vala"><i class="fa fa-link"></i></a>Vala</h1>
+
+<div class="code-frame" data-lang="vala">
+<div class="code-lang"><span class="bold">bench.vala</span></div>
+<div class="highlight"><pre><span class="k">using</span> <span class="nn">GLib</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">benchmark</span> <span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">string</span> <span class="n">args</span><span class="p">[])</span> <span class="p">{</span>
+        <span class="kt">long</span> <span class="n">c_0</span><span class="p">=</span><span class="m">0</span><span class="p">;</span>
+        <span class="kt">long</span> <span class="n">c_1</span><span class="p">=</span><span class="m">1</span><span class="p">;</span>
+        <span class="kt">long</span> <span class="n">c_2</span><span class="p">=</span><span class="n">c_1</span><span class="p">;</span>
+        <span class="kt">ulong</span> <span class="n">counter</span><span class="p">=</span><span class="m">0</span><span class="p">;</span>
+        <span class="n">time_t</span> <span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">;</span>
+        <span class="n">start</span> <span class="p">=</span> <span class="nf">time_t</span><span class="p">();</span>
+        <span class="n">end</span> <span class="p">=</span> <span class="n">start</span><span class="p">;</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="n">c_0</span><span class="p">=</span><span class="n">c_1</span><span class="p">+</span><span class="n">c_2</span><span class="p">;</span>
+            <span class="n">c_1</span><span class="p">=</span><span class="n">c_2</span><span class="p">+</span><span class="n">c_0</span><span class="p">;</span>
+            <span class="n">c_2</span><span class="p">=</span><span class="n">c_0</span><span class="p">+</span><span class="n">c_1</span><span class="p">;</span>
+            <span class="n">end</span> <span class="p">=</span> <span class="nf">time_t</span><span class="p">();</span>
+            <span class="n">counter</span><span class="p">++;</span>
+        <span class="p">}</span><span class="k">while</span><span class="p">((</span><span class="n">end</span><span class="p">-</span><span class="n">start</span><span class="p">)&lt;</span><span class="m">1</span><span class="p">);</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"%lu\n"</span><span class="p">,</span><span class="n">counter</span><span class="p">);</span>
+        <span class="k">return</span> <span class="m">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<h1>
+<span id="java" class="fragment"></span><a href="#java"><i class="fa fa-link"></i></a>Java</h1>
+
+<div class="code-frame" data-lang="java">
+<div class="code-lang"><span class="bold">bench.java</span></div>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">java.util.Calendar</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">bench</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span> <span class="n">args</span><span class="o">[]){</span>
+        <span class="kt">long</span> <span class="n">c_0</span><span class="o">=</span><span class="mi">0L</span><span class="o">;</span>
+        <span class="kt">long</span> <span class="n">c_1</span><span class="o">=</span><span class="mi">1L</span><span class="o">;</span>
+        <span class="kt">long</span> <span class="n">c_2</span><span class="o">=</span><span class="n">c_1</span><span class="o">;</span>
+        <span class="kt">long</span> <span class="n">counter</span><span class="o">=</span><span class="mi">0L</span><span class="o">;</span>
+        <span class="nc">Calendar</span> <span class="n">start</span><span class="o">,</span><span class="n">end</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">s</span><span class="o">,</span><span class="n">e</span><span class="o">;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nc">Calendar</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="nc">Calendar</span><span class="o">.</span><span class="na">SECOND</span><span class="o">);</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">start</span><span class="o">;</span>
+        <span class="k">do</span> <span class="o">{</span>
+            <span class="n">c_0</span><span class="o">=</span><span class="n">c_1</span><span class="o">+</span><span class="n">c_2</span><span class="o">;</span>
+            <span class="n">c_1</span><span class="o">=</span><span class="n">c_2</span><span class="o">+</span><span class="n">c_0</span><span class="o">;</span>
+            <span class="n">c_2</span><span class="o">=</span><span class="n">c_0</span><span class="o">+</span><span class="n">c_1</span><span class="o">;</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="nc">Calendar</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">end</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="nc">Calendar</span><span class="o">.</span><span class="na">SECOND</span><span class="o">);</span>
+            <span class="n">counter</span><span class="o">++;</span>
+        <span class="o">}</span><span class="k">while</span><span class="o">(</span><span class="n">e</span><span class="o">-</span><span class="n">s</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">counter</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+
+<h1>
+<span id="cc" class="fragment"></span><a href="#cc"><i class="fa fa-link"></i></a>C/C++</h1>
+
+<div class="code-frame" data-lang="c">
+<div class="code-lang"><span class="bold">bench.c</span></div>
+<div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span><span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">c_0</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">c_1</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">c_2</span><span class="o">=</span><span class="n">c_1</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">counter</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+    <span class="kt">time_t</span> <span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">start</span><span class="p">;</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="n">c_0</span><span class="o">=</span><span class="n">c_1</span><span class="o">+</span><span class="n">c_2</span><span class="p">;</span>
+        <span class="n">c_1</span><span class="o">=</span><span class="n">c_2</span><span class="o">+</span><span class="n">c_0</span><span class="p">;</span>
+        <span class="n">c_2</span><span class="o">=</span><span class="n">c_0</span><span class="o">+</span><span class="n">c_1</span><span class="p">;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">counter</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span><span class="k">while</span><span class="p">((</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%lu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">counter</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<h1>
+<span id="c" class="fragment"></span><a href="#c"><i class="fa fa-link"></i></a>C#</h1>
+
+<div class="code-frame" data-lang="c#">
+<div class="code-lang"><span class="bold">bench.cs</span></div>
+<div class="highlight"><pre><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">A</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">int</span> <span class="nf">Main</span><span class="p">(</span><span class="n">String</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">long</span> <span class="n">c_0</span><span class="p">=</span><span class="m">0</span><span class="p">;</span>
+        <span class="kt">long</span> <span class="n">c_1</span><span class="p">=</span><span class="m">1</span><span class="p">;</span>
+        <span class="kt">long</span> <span class="n">c_2</span><span class="p">=</span><span class="n">c_1</span><span class="p">;</span>
+        <span class="kt">ulong</span> <span class="n">counter</span><span class="p">=</span><span class="m">0</span><span class="p">;</span>
+        <span class="n">DateTime</span> <span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">;</span>
+        <span class="n">end</span> <span class="p">=</span> <span class="n">start</span> <span class="p">=</span> <span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">;</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="n">c_0</span><span class="p">=</span><span class="n">c_1</span><span class="p">+</span><span class="n">c_2</span><span class="p">;</span>
+            <span class="n">c_1</span><span class="p">=</span><span class="n">c_2</span><span class="p">+</span><span class="n">c_0</span><span class="p">;</span>
+            <span class="n">c_2</span><span class="p">=</span><span class="n">c_0</span><span class="p">+</span><span class="n">c_1</span><span class="p">;</span>
+            <span class="n">end</span> <span class="p">=</span> <span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">;</span>
+            <span class="n">counter</span><span class="p">++;</span>
+        <span class="p">}</span><span class="k">while</span><span class="p">((</span><span class="n">end</span><span class="p">-</span><span class="n">start</span><span class="p">).</span><span class="n">TotalSeconds</span><span class="p">&lt;</span><span class="m">1</span><span class="p">);</span>
+        <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">counter</span><span class="p">);</span>
+        <span class="k">return</span> <span class="m">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+<h1>
+<span id="実行結果" class="fragment"></span><a href="#%E5%AE%9F%E8%A1%8C%E7%B5%90%E6%9E%9C"><i class="fa fa-link"></i></a>実行結果</h1>
+
+<p>統計的にやるのはフィボナッチの増加の割合O(x)を考えないといけないので、できるだけ一秒に近いものを書いておきます。<br>
+なお、C#はMonoを用いてきちっとAOTコンパイルしています。Javaはしていません。AndroidではJITが使われているためです。全部をAndroidのVMで動かすことは<del>難しい</del>面倒くさいのでそのままOracle JDKですが、案の定一番悪い結果になりました。</p>
+
+<p><strong>一位</strong><br>
+C/C++<br>
+118522356回 per second<br>
+当たり前といえば当たり前ですが、一番速いです。速すぎます。<br>
+<strong>二位</strong><br>
+Vala<br>
+85473580回 per second<br>
+C/C++と殆ど変わりません。後続の2つを大きく引き離しています。<br>
+<strong>三位</strong><br>
+C#<br>
+3856898回 per second<br>
+C/C++からは実に29倍、Valaでも21倍の差があります。もう一度言いますがAOTコンパイルしています。<br>
+四位<br>
+Java<br>
+3020728回 per second<br>
+C#が約1.2倍速いです。やはりネイティブで無い点、分は悪いですね。ちなみにC/C++の約40分の一です。</p>
+
+<h1>
+<span id="結論" class="fragment"></span><a href="#%E7%B5%90%E8%AB%96"><i class="fa fa-link"></i></a>結論</h1>
+
+<p>XamarinのC#はネイティブコードです。しかしC/C++と比べてみて遅いのは違いありません。<br>
+C++ではなくC#を使いたいが遅いのを何とかしたいという貴方にはValaをオススメします。ただしC#からは使いづらいですよ。速度が必要な処理の際に呼び出してみてもいいでしょう。</p>

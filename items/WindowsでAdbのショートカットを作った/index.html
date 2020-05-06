@@ -1,0 +1,59 @@
+
+<h1>
+<span id="なぜかcygwin" class="fragment"></span><a href="#%E3%81%AA%E3%81%9C%E3%81%8Bcygwin"><i class="fa fa-link"></i></a>なぜかCygwin</h1>
+
+<p>最初はコマンドプロンプトを使ってショートカットを作ろうと思ったが､なぜかコマンドプロンプトの実行引数をショートカットから指定できなかった｡そこでCygwinを使いました｡別にコマンドプロンプトでもいいです｡<br>
+<a href="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2Fd16b07e5-e469-ef5d-8c2a-3c91069c7583.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=719bc2a69d348f5ffcb294c54bf72b26" target="_blank" rel="nofollow noopener"><img src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2Fd16b07e5-e469-ef5d-8c2a-3c91069c7583.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=719bc2a69d348f5ffcb294c54bf72b26" alt="property.png" data-canonical-src="https://qiita-image-store.s3.amazonaws.com/0/44129/d16b07e5-e469-ef5d-8c2a-3c91069c7583.png" srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2Fd16b07e5-e469-ef5d-8c2a-3c91069c7583.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=d5fd1c7e60e61508dc8c8a82e4c08b5e 1x" loading="lazy"></a><br>
+こんな感じで､作業フォルダにadbの実行ファイルがあるフォルダを指定してください｡<br>
+Cygwinのショートカットの後ろに<code>./adb -d shell</code>と追加すればadbのシェルを指定できます｡</p>
+
+<h1>
+<span id="デバイスを選択できるようにする" class="fragment"></span><a href="#%E3%83%87%E3%83%90%E3%82%A4%E3%82%B9%E3%82%92%E9%81%B8%E6%8A%9E%E3%81%A7%E3%81%8D%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>デバイスを選択できるようにする</h1>
+
+<p>zenityを使いました｡<a href="http://www.placella.com/software/zenity/" rel="nofollow noopener" target="_blank">このサイト</a>からダウンロードできます｡<br>
+zenityはWin/Mac/Linux全てで使えるので､便利です｡<br>
+zenityは初期設定位置にインストールされているとします｡<br>
+するとこのスクリプトでデバイスの選択画面が出せます｡</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">selector.sh</span></div>
+<div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="k">function </span>selector<span class="o">()</span> <span class="o">{</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:/usr/bin
+./adb start-server
+<span class="c">#10個だけ表示｡多いと遅くなる｡</span>
+<span class="k">for </span>i <span class="k">in</span> <span class="sb">`</span><span class="nb">seq </span>10 <span class="nt">-1</span> 1<span class="sb">`</span>
+<span class="k">do
+  </span><span class="nv">line</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>./adb devices|tail <span class="nt">-n</span> +<span class="nv">$i</span>|head <span class="nt">-n</span> 1|sed <span class="nt">-e</span> <span class="s1">'s/\r//g'</span><span class="si">)</span><span class="s2">"</span>
+ <span class="k">if</span> <span class="o">[</span> <span class="o">!</span> <span class="nt">-z</span> <span class="s2">"</span><span class="k">${</span><span class="nv">line</span><span class="k">}</span><span class="s2">"</span> <span class="o">]</span>
+ <span class="k">then
+  if</span> <span class="o">[</span> <span class="s2">"</span><span class="k">${</span><span class="nv">line</span>:0:4<span class="k">}</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"List"</span> <span class="o">]</span>
+  <span class="k">then
+   </span><span class="nb">break
+  </span><span class="k">else
+   </span><span class="nv">array</span><span class="o">=(</span><span class="nv">$line</span><span class="o">)</span>
+   <span class="nv">dev_name</span><span class="o">=</span><span class="k">${</span><span class="nv">array</span><span class="p">[0]</span><span class="k">}</span>
+   <span class="nv">dev_model</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>./adb <span class="nt">-s</span> <span class="k">${</span><span class="nv">array</span><span class="p">[0]</span><span class="k">}</span> shell <span class="nb">cat</span> /system/build.prop | <span class="nb">grep </span>ro<span class="se">\.</span>product<span class="se">\.</span>model | <span class="nb">awk</span> <span class="nt">-F</span><span class="s2">"="</span> <span class="s1">'NR==1 {print $2}'</span> | <span class="nb">sed</span> <span class="nt">-e</span> <span class="s1">'s/ /_/g'</span>| <span class="nb">awk</span> <span class="nt">-v</span> <span class="nv">RS</span><span class="o">=</span><span class="s1">'\r\n'</span> <span class="s1">'{print $1}'</span><span class="si">)</span><span class="s2">"</span>
+   <span class="nb">echo </span>FALSE <span class="s2">"</span><span class="k">${</span><span class="nv">dev_name</span><span class="k">}</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">dev_model</span><span class="k">}</span><span class="s2">"</span> <span class="s2">" "</span>
+  <span class="k">fi
+fi
+done</span>
+<span class="o">}</span>
+
+<span class="k">function </span>run_zenity<span class="o">()</span> <span class="o">{</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="s2">"/cygdrive/c/Program Files (x86)/zenity/bin"</span>:/usr/bin
+zenity <span class="nt">--list</span> <span class="nt">--radiolist</span> <span class="nt">--title</span><span class="o">=</span><span class="s2">"Select Devices..."</span> <span class="nt">--column</span><span class="o">=</span><span class="s2">" "</span> <span class="nt">--column</span><span class="o">=</span><span class="s2">"デバイス名"</span> <span class="nt">--column</span><span class="o">=</span><span class="s2">"モデル名"</span> <span class="se">\</span>
+<span class="sb">`</span>selector|tac<span class="sb">`</span>
+<span class="o">}</span>
+
+<span class="nv">selected_device</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>run_zenity|sed <span class="nt">-e</span> <span class="s1">'s/\r//g'</span><span class="si">)</span><span class="s2">"</span>
+./adb <span class="nt">-s</span> <span class="s2">"</span><span class="k">${</span><span class="nv">selected_device</span><span class="k">}</span><span class="s2">"</span> shell
+
+</pre></div>
+</div>
+
+<p>※改行が変なのはほっといてください｡あとはスペースが入るところがアンダーバーに置き換わってますが､単に技術力の限界です｡<br>
+\rを削除するコードは多分環境によって変わると思います｡MacやLinuxだと必要ないでしょう｡<br>
+するとこんな感じで表示できます｡ ※一つ目のデバイスは消してます｡<br>
+<a href="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2Fbf9d9b5d-c3ee-6db4-4649-0771fd3b7bd9.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=8ab94f1ba2ec2381b147bb8b7c0aae83" target="_blank" rel="nofollow noopener"><img src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2Fbf9d9b5d-c3ee-6db4-4649-0771fd3b7bd9.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=8ab94f1ba2ec2381b147bb8b7c0aae83" alt="zenity.png" data-canonical-src="https://qiita-image-store.s3.amazonaws.com/0/44129/bf9d9b5d-c3ee-6db4-4649-0771fd3b7bd9.png" srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F44129%2Fbf9d9b5d-c3ee-6db4-4649-0771fd3b7bd9.png?ixlib=rb-1.2.2&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=824943a1d6742be9653ca44158a27d01 1x" loading="lazy"></a><br>
+選択してOKを押せば自動的にadbのシェルに入ります｡</p>

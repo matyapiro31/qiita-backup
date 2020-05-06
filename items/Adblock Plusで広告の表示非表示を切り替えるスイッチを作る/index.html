@@ -1,0 +1,29 @@
+
+<h1>
+<span id="adblock-plusのcss" class="fragment"></span><a href="#adblock-plus%E3%81%AEcss"><i class="fa fa-link"></i></a>Adblock PlusのCSS</h1>
+
+<p>Adblock PlusではCSSで指定した要素､擬似要素に対して非表示にさせる仕組みが備わっています｡<br>
+例えばこのような書式です<br>
+<code>example.com##div h1</code></p>
+
+<h1>
+<span id="css3のtarget擬似クラス" class="fragment"></span><a href="#css3%E3%81%AEtarget%E6%93%AC%E4%BC%BC%E3%82%AF%E3%83%A9%E3%82%B9"><i class="fa fa-link"></i></a>CSS3の:target擬似クラス</h1>
+
+<p>:targetはあまり知られていない擬似クラスです｡CSS3で追加されました｡<br>
+これはわかりやすく言えば<code>id</code>属性を持つ要素に対して内部リンクされている時のスタイルを指定するものです｡<br>
+例えばこんなユーザースタイルシートを用意したとします｡そしてStylishなどの拡張機能や開発者モードなどを使って適用してください｡</p>
+
+<div class="code-frame" data-lang="css"><div class="highlight"><pre><span class="c">/* Qiitaで表示が切り替わるユーザースタイルシート */</span>
+<span class="nf">#main</span><span class="nd">:target</span> <span class="p">{</span>
+    <span class="nl">transform</span><span class="p">:</span> <span class="n">scale</span><span class="p">(</span><span class="m">1.5</span><span class="p">,</span><span class="m">1.5</span><span class="p">);</span>
+    <span class="nl">transform-origin</span><span class="p">:</span> <span class="nb">top</span> <span class="nb">center</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div></div>
+
+<p>これでこの<a href="#main">リンク</a>を踏むと､メイン部分が拡大されます｡</p>
+
+<h1>
+<span id="これらを組み合わせる" class="fragment"></span><a href="#%E3%81%93%E3%82%8C%E3%82%89%E3%82%92%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B"><i class="fa fa-link"></i></a>これらを組み合わせる</h1>
+
+<p><code>qiita.com###main:target + .footer div</code><br>
+このようなフィルターを作るとリンクを踏んだ時だけQiitaのフッターが非表示になります｡</p>

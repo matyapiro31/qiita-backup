@@ -1,0 +1,16 @@
+<div class="code-frame" data-lang="c">
+<div class="code-lang"><span class="bold">foreach_def.c</span></div>
+<div class="highlight"><pre><span class="cp">#define foreach(item, array) \
+    int __keep,__count,__size;\
+    for(__keep = 1, \
+            __count = 0,\
+            __size = sizeof (array) / sizeof *(array); \
+        __keep &amp;&amp; __count != __size; \
+        __keep = !__keep, __count++) \
+      for(item = *((array) + __count); __keep; __keep = !__keep)
+</span></pre></div>
+</div>
+
+<p>一次元配列だとこれでOk.<br>
+しかし二次元以上にこれを適用することはできない。ポインタから配列の次元の数を特定できないからだ。C言語は静的な言語なのでこれ以上は難しい。<br>
+ちなみに元ネタは某Overflow。</p>

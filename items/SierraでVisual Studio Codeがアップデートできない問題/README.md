@@ -1,0 +1,4 @@
+macOS Sierra以前はDownloadフォルダに突っ込んだまま起動させていたが、Sierraでこの場合アップデートができなくなった模様。
+詳しくはここに書かれているが、
+https://github.com/Microsoft/vscode/issues/7426#issuecomment-425093469
+/Applicationsにコピーすれば問題なくアップデートできるようになる。

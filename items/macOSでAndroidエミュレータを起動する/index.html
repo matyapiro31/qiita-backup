@@ -1,0 +1,87 @@
+<p>NativeScriptでエミュレータを起動しようとしたら結構大変だったのでそのメモです。<br>
+Androidエミュレータをコマンドラインだけでインストールして起動するまでの手順です。</p>
+
+<h1>
+<span id="android-sdkのインストール" class="fragment"></span><a href="#android-sdk%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>Android SDKのインストール</h1>
+
+<p>Homebrewでインストールします。</p>
+
+<p><code>brew cask install android-sdk</code><br>
+パスを環境変数に登録すると便利です。<br>
+<code>echo export ANDROID_HOME=/usr/local/share/android-sdk &gt;&gt; ~/.bash_profile</code></p>
+
+<h1>
+<span id="必要なパッケージのインストール" class="fragment"></span><a href="#%E5%BF%85%E8%A6%81%E3%81%AA%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>必要なパッケージのインストール</h1>
+
+<p>API 25のビルドツールやライブラリ、システムイメージなどをインストールします。<br>
+インストールできるパッケージは<br>
+<code>ANDROID_HOME/tools/bin/sdkmanager --list</code><br>
+で確認できます。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">$ANDROID_HOME</span>/tools/bin/sdkmanager <span class="nt">--install</span> ¥
+  <span class="s2">"tools"</span> <span class="s2">"platform-tools"</span> <span class="s2">"platforms;android-25"</span> ¥
+  <span class="s2">"build-tools;25.0.2"</span> <span class="s2">"extras;android;m2repository"</span> ¥
+  <span class="s2">"extras;google;m2repository"</span> <span class="s2">"system-images;android-25;google_apis;x86"</span>
+</pre></div></div>
+
+<h1>
+<span id="avdの作成" class="fragment"></span><a href="#avd%E3%81%AE%E4%BD%9C%E6%88%90"><i class="fa fa-link"></i></a>AVDの作成</h1>
+
+<p>AVDを作成するには</p>
+
+<ol>
+<li>デバイス名</li>
+<li>使うシステムイメージ</li>
+<li>デバイスのプロファイル</li>
+</ol>
+
+<p>が必要です。ここでは先ほどインストールしたパッケージを使います。<br>
+SDカードのサイズの指定をしておくといいらしいのでしておきます。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">$ANDROID_HOME</span>/tools/bin/avdmanager create avd ¥
+  <span class="nt">--name</span> <span class="s2">"nexus6p"</span> <span class="nt">--device</span> <span class="s2">"Nexus 6P"</span> <span class="nt">--abi</span> <span class="s2">"google_apis/x86"</span> ¥
+  <span class="nt">-k</span> <span class="s2">"system-images;android-25;google_apis;x86"</span> <span class="nt">--sdcard</span> 512M
+</pre></div></div>
+
+<h1>
+<span id="エミュレータの起動" class="fragment"></span><a href="#%E3%82%A8%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%BF%E3%81%AE%E8%B5%B7%E5%8B%95"><i class="fa fa-link"></i></a>エミュレータの起動</h1>
+
+<p>起動には先ほど作ったデバイス名が必要です。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nv">$ANDROID_HOME</span>/emulator/emulator <span class="nt">-avd</span> <span class="s2">"nexus6p"</span>
+</pre></div></div>
+
+<h1>
+<span id="エミュレータの設定" class="fragment"></span><a href="#%E3%82%A8%E3%83%9F%E3%83%A5%E3%83%AC%E3%83%BC%E3%82%BF%E3%81%AE%E8%A8%AD%E5%AE%9A"><i class="fa fa-link"></i></a>エミュレータの設定</h1>
+
+<p>ホームディレクトリに<code>.android</code>というディレクトリが作られ、そこにAVDと設定があるのでそれを編集する。ストレージを増やしたいなら<code>disk.dataPartition.size=1024MB</code>とか。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre>nano ~/.android/avd/nexus6p.ini
+</pre></div></div>
+
+<h1>
+<span id="dockから起動できるようにする" class="fragment"></span><a href="#dock%E3%81%8B%E3%82%89%E8%B5%B7%E5%8B%95%E3%81%A7%E3%81%8D%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B"><i class="fa fa-link"></i></a>Dockから起動できるようにする</h1>
+
+<p>起動用のAppleScriptを作ります。</p>
+
+<div class="code-frame" data-lang="bash"><div class="highlight"><pre><span class="nb">cd</span> /Applications
+<span class="nb">echo</span> | osacompile <span class="nt">-o</span> Android¥ Emulator.app
+<span class="nb">cd </span>Android¥ Emulator.app/Contents/Resources/Scripts/
+open main.scpt
+</pre></div></div>
+
+<p>スクリプトに</p>
+
+<div class="code-frame" data-lang="applescript"><div class="highlight"><pre><span class="k">try</span><span class="w">
+    </span><span class="nb">do shell script</span><span class="w"> </span><span class="s2">"/usr/local/share/android-sdk/emulator/emulator -avd nexus6p"</span><span class="w">
+</span><span class="k">end</span><span class="w"> </span><span class="k">try</span><span class="w">
+</span></pre></div></div>
+
+<p>と書けばLauncherに登録され、起動できるようになります。</p>
+
+<h1>
+<span id="参考資料" class="fragment"></span><a href="#%E5%8F%82%E8%80%83%E8%B3%87%E6%96%99"><i class="fa fa-link"></i></a>参考資料</h1>
+
+<p><a href="https://docs.nativescript.org/start/ns-setup-os-x" class="autolink" rel="nofollow noopener" target="_blank">https://docs.nativescript.org/start/ns-setup-os-x</a><br>
+<a href="https://stackoverflow.com/questions/42792947/how-to-create-android-virtual-device-with-command-line-and-avdmanager" class="autolink" rel="nofollow noopener" target="_blank">https://stackoverflow.com/questions/42792947/how-to-create-android-virtual-device-with-command-line-and-avdmanager</a><br>
+<a href="https://qiita.com/mattintosh4/items/83e1540c31c803c3fd5e" class="autolink">https://qiita.com/mattintosh4/items/83e1540c31c803c3fd5e</a></p>

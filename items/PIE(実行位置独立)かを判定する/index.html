@@ -1,0 +1,14 @@
+<p>Windowsを覗くOSの共有ライブラリは大抵位置独立型です。<br>
+Wikipediaによれば固定アドレスでなくても動くということらしい。Windowsが再起動が必要なのはこの辺が関係しているのだろうか。</p>
+
+<h1>
+<span id="pieの重要性" class="fragment"></span><a href="#pie%E3%81%AE%E9%87%8D%E8%A6%81%E6%80%A7"><i class="fa fa-link"></i></a>PIEの重要性</h1>
+
+<p>Android 5.0以降はPIEでないと動きません。<br>
+そこでPIEをどうやって判定するのかよく分からなかったので、調べた結果を備忘録として書いておく。</p>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">detect_pic.sh</span></div>
+<div class="highlight"><pre><span class="nv">LANG</span><span class="o">=</span>C readelf <span class="nt">-l</span> &lt;file&gt; | <span class="nb">grep </span>Elf -
+</pre></div>
+</div>

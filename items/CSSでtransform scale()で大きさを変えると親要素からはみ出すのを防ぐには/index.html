@@ -1,0 +1,12 @@
+
+<h1>
+<span id="cssで画像などの大きさを変える" class="fragment"></span><a href="#css%E3%81%A7%E7%94%BB%E5%83%8F%E3%81%AA%E3%81%A9%E3%81%AE%E5%A4%A7%E3%81%8D%E3%81%95%E3%82%92%E5%A4%89%E3%81%88%E3%82%8B"><i class="fa fa-link"></i></a>CSSで画像などの大きさを変える</h1>
+
+<p>要素のサイズを変えるにはCSSの<code>transform</code>プロパティの<code>scale()</code>関数を使います。<br>
+これは<code>width</code>, <code>height</code>, <code>padding</code>を等倍で縮小しますが、<code>margin</code>, <code>border</code>は多分縮小されません。Chrome,Firefoxだと縮小されませんでした。</p>
+
+<h2>
+<span id="親要素からの認識の違い" class="fragment"></span><a href="#%E8%A6%AA%E8%A6%81%E7%B4%A0%E3%81%8B%E3%82%89%E3%81%AE%E8%AA%8D%E8%AD%98%E3%81%AE%E9%81%95%E3%81%84"><i class="fa fa-link"></i></a>親要素からの認識の違い</h2>
+
+<p>width,height,paddingは長く/短くなりますがが親要素からは元の幅として認識されるので、はみ出したり余計な空白ができたりします。<br>
+そこでこれを修正するにはmarginを利用します。marginはpaddingと違い負の数値が指定できるので小さくする場合にも有効です。</p>
